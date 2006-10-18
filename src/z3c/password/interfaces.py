@@ -20,31 +20,39 @@ import zope.interface
 import zope.schema
 from zope.exceptions.interfaces import UserError
 
+from z3c.password import MessageFactory as _
+
 class InvalidPassword(zope.schema.ValidationError):
     """Invalid Password"""
 
-    def __init__(self, reason):
-        self.reason = reason
-        Exception.__init__(self)
+class NoPassword(InvalidPassword):
+    __doc__ = _('''No new password specified.''')
 
-    def __str__(self):
-        return self.reason.encode('utf-8')
+class TooShortPassword(InvalidPassword):
+    __doc__ = _('''Password is too short.''')
 
+class TooLongPassword(InvalidPassword):
+    __doc__ = _('''Password is too long.''')
 
-class PasswordExpired(UserError):
-    """The password has expired."""
+class TooSimilarPassword(InvalidPassword):
+    __doc__ = _('''Password is too similar to old one.''')
+
+class TooManyGroupCharacters(InvalidPassword):
+    __doc__ = _('''Password contains too many characters of one group.''')
+
+class PasswordExpired(Exception):
+    __doc__ = _('''The password has expired.''')
 
     def __init__(self, principal):
         self.principal = principal
-        UserError.__init__(self)
+        Exception.__init__(self, self.__doc__)
 
-
-class TooManyLoginFailures(UserError):
-    """The password was entered incorrectly too often."""
+class TooManyLoginFailures(Exception):
+    __doc__ = _('''The password was entered incorrectly too often.''')
 
     def __init__(self, principal):
         self.principal = principal
-        UserError.__init__(self)
+        Exception.__init__(self, self.__doc__)
 
 
 class IPasswordUtility(zope.interface.Interface):
@@ -56,8 +64,8 @@ class IPasswordUtility(zope.interface.Interface):
     """
 
     description = zope.schema.Text(
-        title=u'Description',
-        description=u'A description of the password utility.',
+        title=_(u'Description'),
+        description=_(u'A description of the password utility.'),
         required=False)
 
     def verify(new, ref=None):
@@ -87,14 +95,14 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
     """A password utility for very secure passwords."""
 
     minLength = zope.schema.Int(
-        title=u'Minimum Length',
-        description=u'The minimum length of the password.',
+        title=_(u'Minimum Length'),
+        description=_(u'The minimum length of the password.'),
         required=False,
         default=None)
 
     maxLength = zope.schema.Int(
-        title=u'Maximum Length',
-        description=u'The maximum length of the password.',
+        title=_(u'Maximum Length'),
+        description=_(u'The maximum length of the password.'),
         required=False,
         default=None)
 
@@ -106,15 +114,15 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
                     u"Minimum lnegth must be greater than the maximum length.")
 
     groupMax = zope.schema.Int(
-        title=u'Maximum Characters of Group',
-        description=u'The maximum amount of characters that a password can '
-                    u'have from one group. The groups are: digits, letters, '
-                    u'punctuation.',
+        title=_(u'Maximum Characters of Group'),
+        description=_(u'The maximum amount of characters that a password can '
+                      u'have from one group. The groups are: digits, letters, '
+                      u'punctuation.'),
         required=False,
         default=None)
 
     maxSimilarity = zope.schema.Float(
-        title=u'Old/New Similarity',
-        description=u'',
+        title=_(u'Old/New Similarity'),
+        description=(u'The similarity ratio between the new and old password.'),
         required=False,
         default=None)

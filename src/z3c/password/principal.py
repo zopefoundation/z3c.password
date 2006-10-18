@@ -35,6 +35,7 @@ class PrincipalMixIn(object):
     def setPassword(self, password, passwordManagerName=None):
         super(PrincipalMixIn, self).setPassword(password, passwordManagerName)
         self.passwordSetOn = datetime.datetime.now()
+        self.failedAttempts = 0
 
     password = property(getPassword, setPassword)
 

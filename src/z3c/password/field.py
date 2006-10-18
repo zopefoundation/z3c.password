@@ -39,5 +39,8 @@ class Password(zope.schema.Password):
         super(Password, self).validate(value)
         old = None
         if self.context is not None:
-            old = self.get(self.context)
+            try:
+                old = self.get(self.context)
+            except AttributeError:
+                pass
         self.checker.verify(value, old)

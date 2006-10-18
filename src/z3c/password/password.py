@@ -76,18 +76,18 @@ class HighSecurityPasswordUtility(object):
         '''See interfaces.IHighSecurityPasswordUtility'''
         # 0. Make sure we got a password.
         if not new:
-            raise interfaces.InvalidPassword(u'No new password specified.')
+            raise interfaces.NoPassword()
         # 1. Make sure the password has the right length.
-        if len(new) < self.minLength or len(new) > self.maxLength:
-            raise interfaces.InvalidPassword(
-                u'New password is too long or too short.')
+        if len(new) < self.minLength:
+            raise interfaces.TooShortPassword()
+        if len(new) > self.maxLength:
+            raise interfaces.TooLongPassword()
         # 2. Ensure that the password is sufficiently different to the old
         #    one.
         if ref is not None:
             sm = difflib.SequenceMatcher(None, new, ref)
             if sm.ratio() > self.maxSimilarity:
-                raise interfaces.InvalidPassword(
-                    u'New password too similar to old one.')
+                raise interfaces.TooSimilarPassword()
         # 3. Ensure that the password's character set is complex enough.
         num_lower_letters = 0
         num_upper_letters = 0
@@ -110,8 +110,7 @@ class HighSecurityPasswordUtility(object):
             num_digits > self.groupMax or
             num_specials > self.groupMax or
             num_others > self.groupMax):
-            raise interfaces.InvalidPassword(
-                u'New password contains too many characters of one group.')
+            raise interfaces.TooManyGroupCharacters()
         return
 
     def generate(self, ref=None):
