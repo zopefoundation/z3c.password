@@ -64,29 +64,29 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify(None)
   Traceback (most recent call last):
   ...
-  InvalidPassword: No new password specified.
+  NoPassword
 
   >>> pwd.verify('')
   Traceback (most recent call last):
   ...
-  InvalidPassword: No new password specified.
+  NoPassword
 
   >>> pwd.verify('', 'other')
   Traceback (most recent call last):
   ...
-  InvalidPassword: No new password specified.
+  NoPassword
 
 - Next, it is verified that the password has the correct length:
 
   >>> pwd.verify('foo')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password is too long or too short.
+  TooShortPassword
 
   >>> pwd.verify('foobar-foobar')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password is too long or too short.
+  TooLongPassword
 
   >>> pwd.verify('fooBar12')
 
@@ -100,7 +100,7 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify('fooBar12', 'foobar12')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password too similar to old one.
+  TooSimilarPassword
 
 - The final check ensures that the password does not have too many characters
   of one group. The groups are: lower letters, upper letters, digits,
@@ -109,22 +109,22 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify('fooBarBlah')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password contains too many characters of one group.
+  TooManyGroupCharacters
 
   >>> pwd.verify('FOOBARBlah')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password contains too many characters of one group.
+  TooManyGroupCharacters
 
   >>> pwd.verify('12345678')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password contains too many characters of one group.
+  TooManyGroupCharacters
 
   >>> pwd.verify('........')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password contains too many characters of one group.
+  TooManyGroupCharacters
 
 Let's now verify a list of password that were provided by a bank:
 
@@ -169,7 +169,7 @@ Let's validate a value:
   >>> pwdField.validate(u'fooBar')
   Traceback (most recent call last):
   ...
-  InvalidPassword: New password is too long or too short.
+  TooShortPassword
 
 
 The Principal Mix-in
@@ -247,7 +247,7 @@ Let's now provide the incorrect password a couple more times:
   >>> user.checkPassword('456456')
   Traceback (most recent call last):
   ...
-  TooManyLoginFailures
+  TooManyLoginFailures: The password was entered incorrectly too often.
 
 As you can see, once the maximum mount of attempts is reached, the system does
 not allow you to log in at all anymore. At this point the password has to be
@@ -270,7 +270,7 @@ A corresponding exception should be raised:
   >>> user.checkPassword('456456')
   Traceback (most recent call last):
   ...
-  PasswordExpired
+  PasswordExpired: The password has expired.
 
 Like for the too-many-failures exception above, you can explicitely turn off
 the expiration check:

@@ -17,20 +17,16 @@ $Id$
 """
 __docformat__ = "reStructuredText"
 
-import doctest
-import unittest
-from zope.testing.doctestunit import DocFileSuite
-
-from z3c.password import testing
+import zope.component
+from zope.app.authentication import password
+from zope.app.testing import placelesssetup
 
 
-def test_suite():
-    return unittest.TestSuite((
-        DocFileSuite('README.txt',
-                     setUp=testing.setUp, tearDown=testing.tearDown,
-                     optionflags=doctest.NORMALIZE_WHITESPACE|doctest.ELLIPSIS,
-                     ),
-        ))
+def setUp(test):
+    placelesssetup.setUp(test)
+    zope.component.provideUtility(
+        password.PlainTextPasswordManager(), name='Plain Text')
 
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
+
+def tearDown(test):
+    placelesssetup.tearDown(test)
