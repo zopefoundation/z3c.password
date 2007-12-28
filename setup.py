@@ -26,7 +26,7 @@ setup (
     version='0.5.0dev',
     author = "Stephan Richter, Roger Ineichen and the Zope Community",
     author_email = "zope3-dev@zope.org",
-    description = "Password password generation and verification for Zope3",
+    description = "Password generation and verification utility for Zope3",
     long_description=(
         read('README.txt')
         + '\n\n' +
