@@ -11,7 +11,7 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Principal MixIn for Advnaced Password Management
+"""Principal MixIn for Advanced Password Management
 
 $Id$
 """
@@ -34,17 +34,16 @@ class PrincipalMixIn(object):
 
     def setPassword(self, password, passwordManagerName=None):
         super(PrincipalMixIn, self).setPassword(password, passwordManagerName)
-        self.passwordSetOn = datetime.datetime.now()
+        self.passwordSetOn = self.now()
         self.failedAttempts = 0
 
     password = property(getPassword, setPassword)
 
+    def now(self):
+        #hook to facilitate testing and easier override
+        return datetime.datetime.now()
+
     def checkPassword(self, pwd, ignoreExpiration=False, ignoreFailures=False):
-        # Make sure the password has not been expired
-        if not ignoreExpiration and self.passwordExpiresAfter is not None:
-            expirationDate = self.passwordSetOn + self.passwordExpiresAfter
-            if expirationDate < datetime.datetime.now():
-                raise interfaces.PasswordExpired(self)
         # Check the password
         same = super(PrincipalMixIn, self).checkPassword(pwd)
         # If this was a failed attempt, record it, otherwise reset the failures
@@ -53,9 +52,17 @@ class PrincipalMixIn(object):
         if not same:
             self.failedAttempts += 1
         # If the maximum amount of failures has been reached notify the system
-        # by sending an event and then raising an error.
+        # by raising an error.
         if not ignoreFailures and self.maxFailedAttempts is not None:
             if (self.maxFailedAttempts and
                 self.failedAttempts > self.maxFailedAttempts):
                 raise interfaces.TooManyLoginFailures(self)
+
+        if same:
+            # Make sure the password has not been expired
+            if not ignoreExpiration and self.passwordExpiresAfter is not None:
+                expirationDate = self.passwordSetOn + self.passwordExpiresAfter
+                if expirationDate < self.now():
+                    raise interfaces.PasswordExpired(self)
+
         return same

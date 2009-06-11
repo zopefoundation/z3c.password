@@ -6,6 +6,21 @@ CHANGES
 
 - Added Russian translation
 
+- Refactor PrincipalMixIn now() into a separate method to facilitate
+  override and testing
+
+- Changed the order the password is checked:
+  1. check password against stored
+  2. check maxFailedAttempts, raise TooManyLoginFailures if over
+  3. if password is OK, check expirationDate, raise PasswordExpired if over
+  4. return whether password matches
+
+  This is because I need to be sure that PasswordExpired is raised only if the
+  password *IS* valid. Entering an invalid password *MUST NOT* raise
+  PasswordExpired, because I want to use PasswordExpired to allow the user
+  to change it's password. This should not happen if the user did not enter a
+  valid password.
+
 0.5.0 (2008-10-21)
 ------------------
 

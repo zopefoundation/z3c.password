@@ -111,7 +111,7 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
         if task.minLength is not None and task.maxLength is not None:
             if task.minLength > task.minLength:
                 raise zope.interface.Invalid(
-                    u"Minimum lnegth must be greater than the maximum length.")
+                    u"Minimum length must be greater than the maximum length.")
 
     groupMax = zope.schema.Int(
         title=_(u'Maximum Characters of Group'),

@@ -261,13 +261,20 @@ Let's now reset the failure count.
 
   >>> user.failedAttempts = 0
 
-Next we expire password:
+Next we expire the password:
 
   >>> user.passwordSetOn = datetime.datetime.now() + datetime.timedelta(-181)
 
 A corresponding exception should be raised:
 
   >>> user.checkPassword('456456')
+  False
+
+Not yet, because the password did not match.
+
+Once we match the password it is raised:
+
+  >>> user.checkPassword('123123')
   Traceback (most recent call last):
   ...
   PasswordExpired: The password has expired.
