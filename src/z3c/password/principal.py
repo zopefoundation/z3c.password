@@ -58,7 +58,9 @@ class PrincipalMixIn(object):
 
         if not ignoreFailures and self.lastFailedAttempt is not None:
             attempts = self._maxFailedAttempts()
-            if attempts is not None and self.failedAttempts > attempts:
+            #this one needs to be >=, because... data just does not
+            #get saved on an exception when running under of a full Zope env.
+            if attempts is not None and self.failedAttempts >= attempts:
                 lockPeriod = self._lockOutPeriod()
                 if lockPeriod is not None:
                     #check if the user locked himself
