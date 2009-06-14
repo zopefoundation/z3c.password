@@ -54,6 +54,14 @@ class TooManyLoginFailures(Exception):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
 
+class AccountLocked(Exception):
+    __doc__ = _('The account is locked, because the password was '
+                'entered incorrectly too often.')
+
+    def __init__(self, principal):
+        self.principal = principal
+        Exception.__init__(self, self.__doc__)
+
 
 class IPasswordUtility(zope.interface.Interface):
     """Component to verify and generate passwords.
@@ -124,5 +132,40 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
     maxSimilarity = zope.schema.Float(
         title=_(u'Old/New Similarity'),
         description=(u'The similarity ratio between the new and old password.'),
+        required=False,
+        default=None)
+
+
+class IPasswordOptionsUtility(zope.interface.Interface):
+    """Different general security options.
+
+    The purpose of this utility is to make common password-related options
+    available
+    """
+
+    changePasswordOnNextLogin = zope.schema.Bool(
+        title=_(u'Password must be changed on next login'),
+        description=_(u'Password must be changed on next login'),
+        required=False,
+        default=False)
+
+    passwordExpiresAfter = zope.schema.Int(
+        title=_(u'Password expires after (days)'),
+        description=_(u'Password expires after (days)'),
+        required=False,
+        default=None)
+
+    lockOutPeriod = zope.schema.Int(
+        title=_(u'Lockout period (minutes)'),
+        description=_(u'Lockout the user after too many failed password entries'
+                       'for this many minutes. The user can try again after.'),
+        required=False,
+        default=None)
+
+    maxFailedAttempts = zope.schema.Int(
+        title=_(u'Max. number of failed password entries before account is locked'),
+        description=_(u'Specifies the amount of failed attempts allowed to check '
+                      'the password before the password is locked and no new '
+                      'password can be provided.'),
         required=False,
         default=None)
