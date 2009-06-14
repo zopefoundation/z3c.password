@@ -31,7 +31,7 @@ class PrincipalMixIn(object):
 
     failedAttempts = 0
     maxFailedAttempts = None
-    lockedOutOn = None
+    lastFailedAttempt = None
     lockOutPeriod = None
 
     def getPassword(self):
@@ -50,50 +50,61 @@ class PrincipalMixIn(object):
         return datetime.datetime.now()
 
     def checkPassword(self, pwd, ignoreExpiration=False, ignoreFailures=False):
+        # keep this as fast as possible, because it will be called (usually)
+        # for EACH request
+
         # Check the password
         same = super(PrincipalMixIn, self).checkPassword(pwd)
 
-        if not ignoreFailures and self.lockedOutOn is not None:
-            lockPeriod = self._lockOutPeriod()
-            if lockPeriod is not None:
-                #check if the user locked himself previously
-                if self.lockedOutOn + lockPeriod > self.now():
-                    if not same:
-                        self.lockedOutOn = self.now()
-                    raise interfaces.AccountLocked(self)
-                else:
-                    self.failedAttempts = 0
-                    self.lockedOutOn = None
+        if not ignoreFailures and self.lastFailedAttempt is not None:
+            attempts = self._maxFailedAttempts()
+            if attempts is not None and self.failedAttempts > attempts:
+                lockPeriod = self._lockOutPeriod()
+                if lockPeriod is not None:
+                    #check if the user locked himself
+                    if self.lastFailedAttempt + lockPeriod > self.now():
+                        if not same:
+                            self.lastFailedAttempt = self.now()
+                        raise interfaces.AccountLocked(self)
 
         # If this was a failed attempt, record it, otherwise reset the failures
         if same and self.failedAttempts != 0:
             self.failedAttempts = 0
-            self.lockedOutOn = None
-        if not same:
-            self.failedAttempts += 1
-        # If the maximum amount of failures has been reached notify the system
-        # by raising an error.
-        if not ignoreFailures:
-            attempts = self._maxFailedAttempts()
-            if attempts is not None:
-                if (attempts and self.failedAttempts > attempts):
-                    #record the time when TooManyLoginFailures happened
-                    self.lockedOutOn = self.now()
-
-                    raise interfaces.TooManyLoginFailures(self)
-
+            self.lastFailedAttempt = None
         if same:
             if not ignoreExpiration:
                 if self.passwordExpired:
                     raise interfaces.PasswordExpired(self)
 
                 # Make sure the password has not been expired
-                expires = self._passwordExpiresAfter()
-                if expires is not None:
-                    if self.passwordSetOn + expires < self.now():
+                expiresOn = self.passwordExpiresOn()
+                if expiresOn is not None:
+                    if expiresOn < self.now():
                         raise interfaces.PasswordExpired(self)
+        else:
+            lockPeriod = self._lockOutPeriod()
+            if lockPeriod is not None and self.lastFailedAttempt is not None:
+                if self.lastFailedAttempt + lockPeriod < self.now():
+                    #reset count if the tries were outside of the lockPeriod
+                    self.failedAttempts = 0
+
+            self.failedAttempts += 1
+            self.lastFailedAttempt = self.now()
+
+            # If the maximum amount of failures has been reached notify the
+            # system by raising an error.
+            if not ignoreFailures:
+                attempts = self._maxFailedAttempts()
+                if attempts is not None and self.failedAttempts > attempts:
+                    raise interfaces.TooManyLoginFailures(self)
 
         return same
+
+    def passwordExpiresOn(self):
+        expires = self._passwordExpiresAfter()
+        if expires is None:
+            return None
+        return self.passwordSetOn + expires
 
     def _optionsUtility(self):
         return zope.component.queryUtility(
@@ -107,7 +118,7 @@ class PrincipalMixIn(object):
         if options is None:
             return self.passwordExpiresAfter
         else:
-            if options.passwordExpiresAfter:
+            if options.passwordExpiresAfter is not None:
                 return datetime.timedelta(days=options.passwordExpiresAfter)
             else:
                 return self.passwordExpiresAfter
@@ -120,7 +131,7 @@ class PrincipalMixIn(object):
         if options is None:
             return self.lockOutPeriod
         else:
-            if options.lockOutPeriod:
+            if options.lockOutPeriod is not None:
                 return datetime.timedelta(minutes=options.lockOutPeriod)
             else:
                 return self.lockOutPeriod
@@ -133,7 +144,7 @@ class PrincipalMixIn(object):
         if options is None:
             return self.maxFailedAttempts
         else:
-            if options.maxFailedAttempts:
+            if options.maxFailedAttempts is not None:
                 return options.maxFailedAttempts
             else:
                 return self.maxFailedAttempts
