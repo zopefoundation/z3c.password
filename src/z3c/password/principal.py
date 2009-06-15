@@ -41,6 +41,7 @@ class PrincipalMixIn(object):
         super(PrincipalMixIn, self).setPassword(password, passwordManagerName)
         self.passwordSetOn = self.now()
         self.failedAttempts = 0
+        self.lastFailedAttempt = None
         self.passwordExpired = False
 
     password = property(getPassword, setPassword)
