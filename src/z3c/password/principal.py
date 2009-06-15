@@ -59,16 +59,19 @@ class PrincipalMixIn(object):
 
         if not ignoreFailures and self.lastFailedAttempt is not None:
             if self.tooManyLoginFailures():
-                lockPeriod = self._lockOutPeriod()
-                if lockPeriod is not None:
-                    #check if the user locked himself
-                    if self.lastFailedAttempt + lockPeriod > self.now():
-                        if not same:
-                            self.lastFailedAttempt = self.now()
-                        raise interfaces.AccountLocked(self)
-                    else:
-                        self.failedAttempts = 0
-                        self.lastFailedAttempt = None
+                locked = self.accountLocked()
+                if locked is None:
+                    #no lockPeriod
+                    pass
+                elif locked:
+                    #account locked by tooManyLoginFailures and within lockPeriod
+                    if not same:
+                        self.lastFailedAttempt = self.now()
+                    raise interfaces.AccountLocked(self)
+                else:
+                    #account locked by tooManyLoginFailures and out of lockPeriod
+                    self.failedAttempts = 0
+                    self.lastFailedAttempt = None
 
         if same:
             #successful attempt
@@ -83,14 +86,7 @@ class PrincipalMixIn(object):
                         raise interfaces.PasswordExpired(self)
             add = 0
         else:
-            #failed attempt
-            lockPeriod = self._lockOutPeriod()
-            if lockPeriod is not None and self.lastFailedAttempt is not None:
-                if self.lastFailedAttempt + lockPeriod < self.now():
-                    #reset count if the tries were outside of the lockPeriod
-                    self.failedAttempts = 0
-
-            #record it, increase counter
+            #failed attempt, record it, increase counter
             self.failedAttempts += 1
             self.lastFailedAttempt = self.now()
             add = 1
@@ -120,6 +116,16 @@ class PrincipalMixIn(object):
             if self.failedAttempts >= attempts:
                 return True
         return False
+
+    def accountLocked(self):
+        lockPeriod = self._lockOutPeriod()
+        if lockPeriod is not None:
+            #check if the user locked himself
+            if self.lastFailedAttempt + lockPeriod > self.now():
+                return True
+            else:
+                return False
+        return None
 
     def passwordExpiresOn(self):
         expires = self._passwordExpiresAfter()
