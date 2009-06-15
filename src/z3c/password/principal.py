@@ -58,10 +58,7 @@ class PrincipalMixIn(object):
         same = super(PrincipalMixIn, self).checkPassword(pwd)
 
         if not ignoreFailures and self.lastFailedAttempt is not None:
-            attempts = self._maxFailedAttempts()
-            #this one needs to be >=, because... data just does not
-            #get saved on an exception when running under of a full Zope env.
-            if attempts is not None and self.failedAttempts >= attempts:
+            if self.tooManyLoginFailures():
                 lockPeriod = self._lockOutPeriod()
                 if lockPeriod is not None:
                     #check if the user locked himself
@@ -69,6 +66,9 @@ class PrincipalMixIn(object):
                         if not same:
                             self.lastFailedAttempt = self.now()
                         raise interfaces.AccountLocked(self)
+                    else:
+                        self.failedAttempts = 0
+                        self.lastFailedAttempt = None
 
         if same:
             #successful attempt
@@ -81,6 +81,7 @@ class PrincipalMixIn(object):
                 if expiresOn is not None:
                     if expiresOn < self.now():
                         raise interfaces.PasswordExpired(self)
+            add = 0
         else:
             #failed attempt
             lockPeriod = self._lockOutPeriod()
@@ -92,11 +93,12 @@ class PrincipalMixIn(object):
             #record it, increase counter
             self.failedAttempts += 1
             self.lastFailedAttempt = self.now()
+            add = 1
 
         # If the maximum amount of failures has been reached notify the
         # system by raising an error.
         if not ignoreFailures:
-            if self.tooManyLoginFailures():
+            if self.tooManyLoginFailures(add):
                 raise interfaces.TooManyLoginFailures(self)
 
         if same and self.failedAttempts != 0:
@@ -106,10 +108,17 @@ class PrincipalMixIn(object):
 
         return same
 
-    def tooManyLoginFailures(self):
+    def tooManyLoginFailures(self, add = 0):
         attempts = self._maxFailedAttempts()
-        if attempts is not None and self.failedAttempts > attempts:
-            return True
+        #this one needs to be >=, because... data just does not
+        #get saved on an exception when running under of a full Zope env.
+        #the dance around ``add`` has the same roots
+        #we need to be able to increase the failedAttempts count and not raise
+        #at the same time
+        if attempts is not None:
+            attempts += add
+            if self.failedAttempts >= attempts:
+                return True
         return False
 
     def passwordExpiresOn(self):
