@@ -141,8 +141,15 @@ Let's now provide the incorrect password a couple more times:
   TooManyLoginFailures: The password was entered incorrectly too often.
 
 As you can see, once the maximum mount of attempts is reached, the system does
-not allow you to log in at all anymore. At this point the password has to be
-reset otherwise. However, you can tell the ``check()`` method explicitly to
+not allow you to log in at all anymore.
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+At this point the password has to be reset otherwise.
+However, you can tell the ``check()`` method explicitly to
 ignore the failure count:
 
   >>> user.checkPassword('456456', ignoreFailures=True)
@@ -365,9 +372,18 @@ It does not matter if we go ahead in time:
 
   >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(days=1)
 
-The user can login again with the right password:
+The user cannot login again with the right password either:
 
   >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+The admin(?) has to reset the password of the user.
+
+  >>> user.password = '234234'
+
+  >>> user.checkPassword('234234')
   True
 
 

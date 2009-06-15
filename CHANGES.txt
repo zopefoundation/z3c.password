@@ -18,8 +18,8 @@ CHANGES
 
   Password checking goes like this (on the high level):
   1. raise AccountLocked if too many bad tries and account should be locked
-  2. raise TooManyLoginFailures if too many bad tries
-  3. raise PasswordExpired if expired AND password matches
+  2. raise PasswordExpired if expired AND password matches
+  3. raise TooManyLoginFailures if too many bad tries
   4. return whether password matches
   More details in ``principal.txt``
 

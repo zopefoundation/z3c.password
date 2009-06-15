@@ -70,11 +70,8 @@ class PrincipalMixIn(object):
                             self.lastFailedAttempt = self.now()
                         raise interfaces.AccountLocked(self)
 
-        # If this was a failed attempt, record it, otherwise reset the failures
-        if same and self.failedAttempts != 0:
-            self.failedAttempts = 0
-            self.lastFailedAttempt = None
         if same:
+            #successful attempt
             if not ignoreExpiration:
                 if self.passwordExpired:
                     raise interfaces.PasswordExpired(self)
@@ -85,20 +82,27 @@ class PrincipalMixIn(object):
                     if expiresOn < self.now():
                         raise interfaces.PasswordExpired(self)
         else:
+            #failed attempt
             lockPeriod = self._lockOutPeriod()
             if lockPeriod is not None and self.lastFailedAttempt is not None:
                 if self.lastFailedAttempt + lockPeriod < self.now():
                     #reset count if the tries were outside of the lockPeriod
                     self.failedAttempts = 0
 
+            #record it, increase counter
             self.failedAttempts += 1
             self.lastFailedAttempt = self.now()
 
-            # If the maximum amount of failures has been reached notify the
-            # system by raising an error.
-            if not ignoreFailures:
-                if self.tooManyLoginFailures():
-                    raise interfaces.TooManyLoginFailures(self)
+        # If the maximum amount of failures has been reached notify the
+        # system by raising an error.
+        if not ignoreFailures:
+            if self.tooManyLoginFailures():
+                raise interfaces.TooManyLoginFailures(self)
+
+        if same and self.failedAttempts != 0:
+            #if all nice and good clear failure counter
+            self.failedAttempts = 0
+            self.lastFailedAttempt = None
 
         return same
 
