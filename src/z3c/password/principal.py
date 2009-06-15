@@ -96,11 +96,16 @@ class PrincipalMixIn(object):
             # If the maximum amount of failures has been reached notify the
             # system by raising an error.
             if not ignoreFailures:
-                attempts = self._maxFailedAttempts()
-                if attempts is not None and self.failedAttempts > attempts:
+                if self.tooManyLoginFailures():
                     raise interfaces.TooManyLoginFailures(self)
 
         return same
+
+    def tooManyLoginFailures(self):
+        attempts = self._maxFailedAttempts()
+        if attempts is not None and self.failedAttempts > attempts:
+            return True
+        return False
 
     def passwordExpiresOn(self):
         expires = self._passwordExpiresAfter()
