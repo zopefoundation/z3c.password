@@ -121,7 +121,8 @@ class PrincipalMixIn(object):
         lockPeriod = self._lockOutPeriod()
         if lockPeriod is not None:
             #check if the user locked himself
-            if self.lastFailedAttempt + lockPeriod > self.now():
+            if (self.lastFailedAttempt is not None
+                and self.lastFailedAttempt + lockPeriod > self.now()):
                 return True
             else:
                 return False

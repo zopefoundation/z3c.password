@@ -616,3 +616,12 @@ Coverage happiness
   >>> user = MyOtherPrincipal('srichter', '123123', u'Stephan Richter')
   >>> user.passwordSetOn
   datetime.datetime(...)
+
+accountLocked should not burp when there was no failure yet:
+
+  >>> user.accountLocked() is None
+  True
+
+  >>> user.lockOutPeriod = 30
+  >>> user.accountLocked()
+  False
