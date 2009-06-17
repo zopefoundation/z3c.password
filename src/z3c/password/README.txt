@@ -126,6 +126,11 @@ letters, digits, punctuation, other), and the maximum similarity score.
   ...
   TooManyGroupCharacters
 
+  >>> pwd.verify(unichr(0x0e1)*8)
+  Traceback (most recent call last):
+  ...
+  TooManyGroupCharacters
+
 Let's now verify a list of password that were provided by a bank:
 
   >>> for new in ('K7PzX2JZ', 'DznMLIww', 'ks59Ursq', 'YUcsuIrQ', 'bPEUFGSa',
@@ -141,6 +146,12 @@ when initializing the utility:
   '{l%ix~t8R'
   >>> pwd.generate()
   'Us;iwbzM[J'
+
+Force a LOT to make coverage happy:
+
+  >>> for x in xrange(256):
+  ...     _ =pwd.generate()
+
 
 
 The Password Field
@@ -171,120 +182,3 @@ Let's validate a value:
   ...
   TooShortPassword
 
-
-The Principal Mix-in
---------------------
-
-The principal mixin is a quick and functional example on how to use the
-password utility and field. The mix-in class defines the following additional
-attributes:
-
-
-- ``passwordExpiresAfter``
-
-  A time delta object that describes for how long the password is valid before
-  a new one has to be specified. If ``None``, the password will never expire.
-
-- ``maxFailedAttempts``
-
-  An integer specifying the amount of failed attempts allowed to check the
-  password before the password is locked and no new password can be provided.
-
-- ``passwordSetOn``
-
-  The date/time at which the password was last set. This value is used to
-  determine the expiration of a password.
-
-- ``failedAttempts``
-
-  This is a counter that keeps track of the amount of failed login attempts
-  since the last successful one. This value is used to determine when to lock
-  the account after the maximum amount of failures has been reached.
-
-Let's now create a principal:
-
-  >>> from zope.app.authentication import principalfolder
-  >>> from z3c.password import principal
-
-  >>> class MyPrincipal(principal.PrincipalMixIn,
-  ...                   principalfolder.InternalPrincipal):
-  ...     pass
-
-  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
-
-Since the password has been immediately set, the ```passwordSetOn`` attribute
-should have a value:
-
-  >>> user.passwordSetOn
-  datetime.datetime(...)
-
-Initially, the amount of failed attempts is zero, ...
-
-  >>> user.failedAttempts
-  0
-
-but after checking the password incorrectly, the value is updated:
-
-  >>> user.checkPassword('456456')
-  False
-  >>> user.failedAttempts
-  1
-
-Initially there is no constraint on user, but let's add some:
-
-  >>> user.passwordExpiresAfter
-  >>> user.passwordExpiresAfter = datetime.timedelta(180)
-
-  >>> user.maxFailedAttempts
-  >>> user.maxFailedAttempts = 3
-
-Let's now provide the incorrect password a couple more times:
-
-  >>> user.checkPassword('456456')
-  False
-  >>> user.checkPassword('456456')
-  False
-  >>> user.checkPassword('456456')
-  Traceback (most recent call last):
-  ...
-  TooManyLoginFailures: The password was entered incorrectly too often.
-
-As you can see, once the maximum mount of attempts is reached, the system does
-not allow you to log in at all anymore. At this point the password has to be
-reset otherwise. However, you can tell the ``check()`` method explicitly to
-ignore the failure count:
-
-  >>> user.checkPassword('456456', ignoreFailures=True)
-  False
-
-Let's now reset the failure count.
-
-  >>> user.failedAttempts = 0
-
-Next we expire the password:
-
-  >>> user.passwordSetOn = datetime.datetime.now() + datetime.timedelta(-181)
-
-A corresponding exception should be raised:
-
-  >>> user.checkPassword('456456')
-  False
-
-Not yet, because the password did not match.
-
-Once we match the password it is raised:
-
-  >>> user.checkPassword('123123')
-  Traceback (most recent call last):
-  ...
-  PasswordExpired: The password has expired.
-
-Like for the too-many-failures exception above, you can explicitely turn off
-the expiration check:
-
-  >>> user.checkPassword('456456', ignoreExpiration=True)
-  False
-
-It is the responsibility of the presentation code to provide views for those
-two exceptions. For the latter, it is common to allow the user to enter a new
-password after providing the old one as verification.

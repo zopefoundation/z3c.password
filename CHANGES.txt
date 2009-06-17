@@ -2,7 +2,26 @@
 CHANGES
 =======
 
-0.5.1 (unreleased)
+0.6.0 (unreleased)
+
+- Features:
+  ``PrincipalMixIn`` got some new properties:
+  * ``passwordExpired``: to force the expiry of the password
+  * ``lockOutPeriod``: to enable automatic lock and unlock on too many bad tries
+
+  ``IPasswordOptionsUtility`` to have global password options:
+  * ``changePasswordOnNextLogin``: not implemented here,
+                                   use PrincipalMixIn.passwordExpired
+  * ``lockOutPeriod``: global counterpart of the PrincipalMixIn property
+  * ``passwordExpiresAfter``: global counterpart of the PrincipalMixIn property
+  * ``maxFailedAttempts``: global counterpart of the PrincipalMixIn property
+
+  Password checking goes like this (on the high level):
+  1. raise AccountLocked if too many bad tries and account should be locked
+  2. raise PasswordExpired if expired AND password matches
+  3. raise TooManyLoginFailures if too many bad tries
+  4. return whether password matches
+  More details in ``principal.txt``
 
 - Added Russian translation
 

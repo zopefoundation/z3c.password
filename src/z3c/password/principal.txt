@@ -1,0 +1,627 @@
+============================
+Advnaced Password Management
+============================
+
+The Principal Mix-in
+--------------------
+
+The principal mixin is a quick and functional example on how to use the
+password utility and field. The mix-in class defines the following additional
+attributes:
+
+- ``passwordExpiresAfter``
+
+  A time delta object that describes for how long the password is valid before
+  a new one has to be specified. If ``None``, the password will never expire.
+
+- ``passwordSetOn``
+
+  The date/time at which the password was last set. This value is used to
+  determine the expiration of a password.
+
+- ``passwordExpired``
+
+  Boolean. If set to True raises PasswordExpired regardless of it's expired by
+  passwordExpiresAfter. Gets reset by setPassword.
+  Handy feature to implement 'Password must be changed on next login'
+
+- ``maxFailedAttempts``
+
+  An integer specifying the amount of failed attempts allowed to check the
+  password before the password is locked and no new password can be provided.
+  (or lockOutPeriod kicks in)
+
+- ``failedAttempts``
+
+  This is a counter that keeps track of the amount of failed login attempts
+  since the last successful one. This value is used to determine when to lock
+  the account after the maximum amount of failures has been reached.
+
+- ``lastFailedAttempt``
+
+  The date/time at which the failedAttempts last bad password was entered.
+  Used to implement automatic account lock after too many login failures.
+  Cleared when a good password is entered.
+
+- ``lockOutPeriod``
+
+  A time delta object after the user can try again after too many login
+  failures.
+  If ``None`` login will enabled by a correct password.
+
+There is the IPasswordOptionsUtility utility, with which you can provide
+options for some features.
+Strategy is that if the same option/property exists on the principal
+and it's not None then the principal's property takes priority.
+
+- ``changePasswordOnNextLogin``
+
+  Set to True if the principal has to change it's password on next login.
+  Not implemented, because it's not that easy. Thoug added to the utility
+  to keep thing together. Use the passwordExpired property of the principal.
+
+- ``passwordExpiresAfter``
+
+  Number of days (integer!) after the password expires.
+  Describes for how long the password is valid before
+  a new one has to be specified. If ``None``, the password will never expire.
+  (integer because it's easier to build a UI for an integer)
+
+- ``lockOutPeriod``
+
+  Number of minutes (integer!) after the user can try again after too many login
+  failures.
+  If ``None`` login will enabled by a correct password.
+
+- ``maxFailedAttempts``
+
+  An integer specifying the amount of failed attempts allowed to check the
+  password before the password is locked and no new password can be provided.
+  (or lockOutPeriod kicks in)
+
+
+Let's now create a principal:
+
+  >>> from zope.app.authentication import principalfolder
+  >>> from z3c.password import principal
+
+  >>> class MyPrincipal(principal.PrincipalMixIn,
+  ...                   principalfolder.InternalPrincipal):
+  ...     #override the now function to feed in the datetime
+  ...     def now(self):
+  ...         return NOW
+
+Nail the date:
+
+  >>> import datetime
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Since the password has been immediately set, the ```passwordSetOn`` attribute
+should have a value:
+
+  >>> user.passwordSetOn
+  datetime.datetime(2009, 6, 14, 13, 0)
+
+The good password validates fine:
+
+  >>> user.checkPassword('123123')
+  True
+
+Initially, the amount of failed attempts is zero, ...
+
+  >>> user.failedAttempts
+  0
+
+but after checking the password incorrectly, the value is updated:
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+Initially there is no constraint on user, but let's add some:
+
+  >>> user.passwordExpiresAfter
+  >>> user.passwordExpiresAfter = datetime.timedelta(180)
+
+  >>> user.maxFailedAttempts
+  >>> user.maxFailedAttempts = 3
+
+Let's now provide the incorrect password a couple more times:
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.checkPassword('456456')
+  False
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+As you can see, once the maximum mount of attempts is reached, the system does
+not allow you to log in at all anymore.
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+At this point the password has to be reset otherwise.
+However, you can tell the ``check()`` method explicitly to
+ignore the failure count:
+
+  >>> user.checkPassword('456456', ignoreFailures=True)
+  False
+
+Let's now reset the failure count.
+
+  >>> user.failedAttempts = 0
+
+Next we expire the password:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(181)
+
+A corresponding exception should be raised:
+
+  >>> user.checkPassword('456456')
+  False
+
+Not yet, because the password did not match.
+
+Once we match the password it is raised:
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  PasswordExpired: The password has expired.
+
+Like for the too-many-failures exception above, you can explicitely turn off
+the expiration check:
+
+  >>> user.checkPassword('456456', ignoreExpiration=True)
+  False
+
+If we set the password, the user can login again:
+
+  >>> user.setPassword('234234')
+
+  >>> user.checkPassword('234234')
+  True
+
+It is the responsibility of the presentation code to provide views for those
+two exceptions. For the latter, it is common to allow the user to enter a new
+password after providing the old one as verification.
+
+
+To check the new features we need a utility that provides the options.
+
+  >>> import zope.interface
+  >>> import zope.component
+  >>> from z3c.password import interfaces
+  >>> class PasswordOptionsUtility(object):
+  ...     zope.interface.implements(interfaces.IPasswordOptionsUtility)
+  ...
+  ...     changePasswordOnNextLogin = False
+  ...     passwordExpiresAfter = None
+  ...     lockOutPeriod = None
+  ...     maxFailedAttempts = None
+
+  >>> poptions = PasswordOptionsUtility()
+  >>> zope.component.provideUtility(poptions)
+
+
+Expire password on next login
+-----------------------------
+
+``IPasswordOptionsUtility`` ``changePasswordOnNextLogin``
+
+We do not directly support this option, because it's not possible to tell
+when to set this flag.
+We provide the ``passwordExpired`` property on the PrincipalMixIn for this.
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+While it's False, the user can login as usual.
+
+  >>> user.passwordExpired
+  False
+
+  >>> user.checkPassword('123123')
+  True
+
+When the admin sets it to True, the PasswordExpired exception will be raised.
+
+  >>> user.passwordExpired = True
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  PasswordExpired: The password has expired.
+
+At this point your application should provide a form to change the user's
+password.
+
+When the user sets the password, the flag gets reset.
+
+  >>> user.setPassword('456456')
+
+  >>> user.passwordExpired
+  False
+
+And the user can login again.
+
+  >>> user.checkPassword('456456')
+  True
+
+
+Password expiration
+-------------------
+
+``IPasswordOptionsUtility`` ``passwordExpiresAfter``
+
+With this option password expiration can be set globally.
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Set it at 180 days:
+
+  >>> poptions.passwordExpiresAfter = 180
+
+While we're within the 180 days the user can login:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(days=1)
+  >>> user.checkPassword('123123')
+  True
+
+Once we go behind 180 days he can't:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(days=181)
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  PasswordExpired: The password has expired.
+
+Unless we override on the principal itself:
+
+  >>> user.passwordExpiresAfter = datetime.timedelta(days=365)
+  >>> user.checkPassword('123123')
+  True
+
+Setting the property to None will use the globals again:
+
+  >>> user.passwordExpiresAfter = None
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  PasswordExpired: The password has expired.
+
+After setting the password again it's all good:
+
+  >>> user.setPassword('234234')
+  >>> user.checkPassword('234234')
+  True
+
+
+Max. failed attempts
+--------------------
+
+``IPasswordOptionsUtility`` ``maxFailedAttempts``
+
+With this option the amount of failed attempts allowed to check the password
+before the password is locked and no new password can be set globally.
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Set the count at 3 attempts:
+
+  >>> poptions.maxFailedAttempts = 3
+
+Initially, the amount of failed attempts is zero, ...
+
+  >>> user.failedAttempts
+  0
+
+but after checking the password incorrectly, the value is updated:
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+Let's now provide the incorrect password a couple more times:
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.checkPassword('456456')
+  False
+
+On the 4th bad try we get the exception:
+
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+Unless we override on the principal itself:
+
+  >>> user.maxFailedAttempts = 10
+  >>> user.checkPassword('456456')
+  False
+
+Setting the property back to None will use the globals again:
+
+  >>> user.maxFailedAttempts = None
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+It does not matter if we go ahead in time:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(days=365)
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(days=1)
+
+The user cannot login again with the right password either:
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+The admin(?) has to reset the password of the user.
+
+  >>> user.password = '234234'
+
+  >>> user.checkPassword('234234')
+  True
+
+
+Timed lockout
+-------------
+
+``IPasswordOptionsUtility`` ``lockOutPeriod``
+
+Use this option together with ``maxFailedAttempts``.
+With this option the number of minutes for which the user will be locked
+can be set globally.
+Once this option is set, the user will be unable to login even if he hits
+the correct password before the specified time passes.
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+maxFailedAttempts is still at 3:
+
+  >>> poptions.maxFailedAttempts
+  3
+
+Set lockOutPeriod to 60 minutes:
+
+  >>> poptions.lockOutPeriod = 60
+
+Bang on with the bad password:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=1)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=2)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=3)
+  >>> user.checkPassword('456456')
+  False
+
+The timestamp of the last bad try is recorded:
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 3)
+
+The user cannot login within the next 60 minutes.
+
+Be it with the bad password:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=15)
+
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  AccountLocked: The account is locked, because the password was entered incorrectly too often.
+
+BTW, beating on the bad password starts the 60 minutes again:
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 15)
+
+Where the good password just does not let the user in:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=30)
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  AccountLocked: The account is locked, because the password was entered incorrectly too often.
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 15)
+
+The user has to wait, till the time has passed:
+(remember the last bad try was at +15mins, so we need to wait until +76mins)
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=76)
+
+  >>> user.checkPassword('123123')
+  True
+
+The good login resets all the properties:
+
+  >>> user.lastFailedAttempt
+  >>> user.failedAttempts
+  0
+
+
+The same works if the lockOutPeriod is set on the principal:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+maxFailedAttempts is still at 3:
+
+  >>> poptions.maxFailedAttempts
+  3
+
+Set lockOutPeriod to 60 minutes, but on the principal we have to set a timedelta:
+
+  >>> poptions.lockOutPeriod = None
+  >>> user.lockOutPeriod = datetime.timedelta(minutes=60)
+
+Bang on with the bad password:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=1)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=2)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=3)
+  >>> user.checkPassword('456456')
+  False
+
+The timestamp of the last bad try is recorded:
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 3)
+
+The user cannot login within the next 60 minutes.
+
+Be it with the bad password:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=15)
+
+  >>> user.checkPassword('456456')
+  Traceback (most recent call last):
+  ...
+  AccountLocked: The account is locked, because the password was entered incorrectly too often.
+
+BTW, beating on the bad password starts the 60 minutes again:
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 15)
+
+Where the good password just does not let the user in:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=30)
+
+  >>> user.checkPassword('123123')
+  Traceback (most recent call last):
+  ...
+  AccountLocked: The account is locked, because the password was entered incorrectly too often.
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 15)
+
+The user has to wait, till the time has passed:
+(remember the last bad try was at +15mins, so we need to wait until +76mins)
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=76)
+
+  >>> user.checkPassword('123123')
+  True
+
+The good login resets all the properties:
+
+  >>> user.lastFailedAttempt
+  >>> user.failedAttempts
+  0
+
+
+Edge case.
+The number of bad login tries has to exceed ``maxFailedAttempts`` within the
+``lockOutPeriod``.
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.lockOutPeriod = datetime.timedelta(minutes=60)
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=1)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=2)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=3)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 13, 3)
+  >>> user.failedAttempts
+  3
+
+If the user tries again after the lockOutPeriod passed, the ``failedAttempts``
+get reset:
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)+datetime.timedelta(minutes=65)
+  >>> user.checkPassword('456456')
+  False
+
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 14, 5)
+  >>> user.failedAttempts
+  1
+
+
+Edge case.
+When there is no ``maxFailedAttempts`` set, we can bang on with a bad password
+forever.
+
+  >>> poptions.maxFailedAttempts = None
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.maxFailedAttempts = None
+
+  >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
+
+  >>> for x in xrange(256):
+  ...     NOW = datetime.datetime(2009, 6, 14, 13)+datetime.timedelta(minutes=x)
+  ...     if user.checkPassword('456456'):
+  ...         print 'bug'
+
+
+Coverage happiness
+------------------
+
+  >>> class MyOtherPrincipal(principal.PrincipalMixIn,
+  ...                   principalfolder.InternalPrincipal):
+  ...     pass
+
+  >>> user = MyOtherPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.passwordSetOn
+  datetime.datetime(...)
+
+accountLocked should not burp when there was no failure yet:
+
+  >>> user.accountLocked() is None
+  True
+
+  >>> user.lockOutPeriod = 30
+  >>> user.accountLocked()
+  False
