@@ -40,6 +40,9 @@ class TooSimilarPassword(InvalidPassword):
 class TooManyGroupCharacters(InvalidPassword):
     __doc__ = _('''Password contains too many characters of one group.''')
 
+class TooFewGroupCharacters(InvalidPassword):
+    __doc__ = _('''Password does not contain enough characters of one group.''')
+
 class PasswordExpired(Exception):
     __doc__ = _('''The password has expired.''')
 
@@ -134,6 +137,94 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
         description=(u'The similarity ratio between the new and old password.'),
         required=False,
         default=None)
+
+    minLowerLetter = zope.schema.Int(
+        title=_(u'Minimum Number of Lowercase letters'),
+        description=_(u'The minimum amount of lowercase letters that a '
+                      u'password must have.'),
+        required=False,
+        default=None)
+
+    minUpperLetter = zope.schema.Int(
+        title=_(u'Minimum Number of Uppercase letters'),
+        description=_(u'The minimum amount of uppercase letters that a '
+                      u'password must have.'),
+        required=False,
+        default=None)
+
+    minDigits = zope.schema.Int(
+        title=_(u'Minimum Number of Numeric digits'),
+        description=_(u'The minimum amount of numeric digits that a '
+                      u'password must have.'),
+        required=False,
+        default=None)
+
+    minSpecials = zope.schema.Int(
+        title=_(u'Minimum Number of Special characters'),
+        description=_(u'The minimum amount of special characters that a '
+                      u'password must have.'),
+        required=False,
+        default=None)
+
+    #WARNING! generating a password with Others is... not always sane
+    #think twice before you use it
+    minOthers = zope.schema.Int(
+        title=_(u'Minimum Number of Other characters'),
+        description=_(u'The minimum amount of other characters that a '
+                      u'password must have.'),
+        required=False,
+        default=None)
+
+    @zope.interface.invariant
+    def saneMinimums(task):
+        minl = 0
+        if task.minLowerLetter:
+            if task.minLowerLetter > task.groupMax:
+                raise zope.interface.Invalid(
+                    u"Any group minimum length must NOT be greater than "
+                    u"the maximum group length.")
+
+            minl += task.minLowerLetter
+        if task.minUpperLetter:
+            if task.minUpperLetter > task.groupMax:
+                raise zope.interface.Invalid(
+                    u"Any group minimum length must NOT be greater than "
+                    u"the maximum group length.")
+
+            minl += task.minUpperLetter
+        if task.minDigits:
+            if task.minDigits > task.groupMax:
+                raise zope.interface.Invalid(
+                    u"Any group minimum length must NOT be greater than "
+                    u"the maximum group length.")
+
+            minl += task.minDigits
+        if task.minSpecials:
+            if task.minSpecials > task.groupMax:
+                raise zope.interface.Invalid(
+                    u"Any group minimum length must NOT be greater than "
+                    u"the maximum group length.")
+
+            minl += task.minSpecials
+        if task.minOthers:
+            if task.minOthers > task.groupMax:
+                raise zope.interface.Invalid(
+                    u"Any group minimum length must NOT be greater than "
+                    u"the maximum group length.")
+
+            minl += task.minOthers
+
+        #if task.minLength is not None:
+        #    if minl > task.minLength:
+        #        raise zope.interface.Invalid(
+        #            u"Sum of group minimum lengths must NOT be greater than "
+        #            u"the minimum length.")
+
+        if task.maxLength is not None:
+            if minl > task.maxLength:
+                raise zope.interface.Invalid(
+                    u"Sum of group minimum lengths must NOT be greater than "
+                    u"the maximum password length.")
 
 
 class IPasswordOptionsUtility(zope.interface.Interface):

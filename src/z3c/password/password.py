@@ -54,6 +54,16 @@ class HighSecurityPasswordUtility(object):
         interfaces.IHighSecurityPasswordUtility['groupMax'])
     maxSimilarity = FieldProperty(
         interfaces.IHighSecurityPasswordUtility['maxSimilarity'])
+    minLowerLetter = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minLowerLetter'])
+    minUpperLetter = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minUpperLetter'])
+    minDigits = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minDigits'])
+    minSpecials = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minSpecials'])
+    minOthers = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minOthers'])
 
     LOWERLETTERS = string.letters[:26]
     UPPERLETTERS = string.letters[26:]
@@ -72,6 +82,11 @@ class HighSecurityPasswordUtility(object):
         self.maxSimilarity = maxSimilarity
         self.random = random.Random(seed or time.time())
 
+    def _checkSimilarity(self, new, ref):
+        sm = difflib.SequenceMatcher(None, new, ref)
+        if sm.ratio() > self.maxSimilarity:
+            raise interfaces.TooSimilarPassword()
+
     def verify(self, new, ref=None):
         '''See interfaces.IHighSecurityPasswordUtility'''
         # 0. Make sure we got a password.
@@ -85,9 +100,7 @@ class HighSecurityPasswordUtility(object):
         # 2. Ensure that the password is sufficiently different to the old
         #    one.
         if ref is not None:
-            sm = difflib.SequenceMatcher(None, new, ref)
-            if sm.ratio() > self.maxSimilarity:
-                raise interfaces.TooSimilarPassword()
+            self._checkSimilarity(new, ref)
         # 3. Ensure that the password's character set is complex enough.
         num_lower_letters = 0
         num_upper_letters = 0
@@ -111,7 +124,32 @@ class HighSecurityPasswordUtility(object):
             num_specials > self.groupMax or
             num_others > self.groupMax):
             raise interfaces.TooManyGroupCharacters()
+
+        if (self.minLowerLetter is not None
+            and num_lower_letters < self.minLowerLetter):
+            raise interfaces.TooFewGroupCharacters()
+
+        if (self.minUpperLetter is not None
+            and num_upper_letters < self.minUpperLetter):
+            raise interfaces.TooFewGroupCharacters()
+
+        if (self.minDigits is not None
+            and num_digits < self.minDigits):
+            raise interfaces.TooFewGroupCharacters()
+
+        if (self.minSpecials is not None
+            and num_specials < self.minSpecials):
+            raise interfaces.TooFewGroupCharacters()
+
+        if (self.minOthers is not None
+            and num_others < self.minOthers):
+            raise interfaces.TooFewGroupCharacters()
+
         return
+
+    def _randomOther(self):
+        #override if you want an other range
+        return unichr(self.random.randint(0x0a1, 0x0ff))
 
     def generate(self, ref=None):
         '''See interfaces.IHighSecurityPasswordUtility'''
@@ -120,11 +158,32 @@ class HighSecurityPasswordUtility(object):
             new = ''
             # Determine the length of the password
             length = self.random.randint(self.minLength, self.maxLength)
+
             # Generate the password
             chars = self.LOWERLETTERS + self.UPPERLETTERS + \
                     self.DIGITS + self.SPECIALS
+
+            if (self.minOthers is not None
+                and self.minOthers > 0):
+                # unichr(0x0ffff) is a placeholder for Others
+                # this is deliberately this way, because a unicode
+                # range of 0x0a1...0x010ffff is rather a big string
+                chars += unichr(0x0ffff)
+
             for count in xrange(length):
                 new += self.random.choice(chars)
+
+            if (self.minOthers is not None
+                and self.minOthers > 0):
+                # replace now placeholders with random other characters
+                newest = ''
+                for c in new:
+                    if c == unichr(0x0ffff):
+                        newest += self._randomOther()
+                    else:
+                        newest += c
+                new = newest
+
             # Verify the new password
             try:
                 self.verify(new, ref)
