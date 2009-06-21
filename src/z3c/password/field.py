@@ -44,3 +44,12 @@ class Password(zope.schema.Password):
             except AttributeError:
                 pass
         self.checker.verify(value, old)
+
+        #try to check for disallowPasswordReuse here too, to raise
+        #problems ASAP
+        if self.context is not None:
+            try:
+                self.context._checkDisallowedPreviousPassword(value)
+            except AttributeError:
+                #if _checkDisallowedPreviousPassword is missing
+                pass

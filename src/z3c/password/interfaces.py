@@ -43,8 +43,21 @@ class TooManyGroupCharacters(InvalidPassword):
 class TooFewGroupCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough characters of one group.''')
 
+class TooFewUniqueCharacters(InvalidPassword):
+    __doc__ = _('''Password does not contain enough unique characters.''')
+
+class TooFewUniqueLetters(InvalidPassword):
+    __doc__ = _('''Password does not contain enough unique letters.''')
+
 class PasswordExpired(Exception):
     __doc__ = _('''The password has expired.''')
+
+    def __init__(self, principal):
+        self.principal = principal
+        Exception.__init__(self, self.__doc__)
+
+class PreviousPasswordNotAllowed(InvalidPassword):
+    __doc__ = _('''The password set was already used before.''')
 
     def __init__(self, principal):
         self.principal = principal
@@ -120,9 +133,9 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
     @zope.interface.invariant
     def minMaxLength(task):
         if task.minLength is not None and task.maxLength is not None:
-            if task.minLength > task.minLength:
+            if task.minLength > task.maxLength:
                 raise zope.interface.Invalid(
-                    u"Minimum length must be greater than the maximum length.")
+                    u"Minimum length must not be greater than the maximum length.")
 
     groupMax = zope.schema.Int(
         title=_(u'Maximum Characters of Group'),
@@ -166,8 +179,7 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
         required=False,
         default=None)
 
-    #WARNING! generating a password with Others is... not always sane
-    #think twice before you use it
+    #WARNING! generating a password with Others is not yet supported
     minOthers = zope.schema.Int(
         title=_(u'Minimum Number of Other characters'),
         description=_(u'The minimum amount of other characters that a '
@@ -214,17 +226,46 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
 
             minl += task.minOthers
 
-        #if task.minLength is not None:
-        #    if minl > task.minLength:
-        #        raise zope.interface.Invalid(
-        #            u"Sum of group minimum lengths must NOT be greater than "
-        #            u"the minimum length.")
-
         if task.maxLength is not None:
             if minl > task.maxLength:
                 raise zope.interface.Invalid(
                     u"Sum of group minimum lengths must NOT be greater than "
                     u"the maximum password length.")
+
+    minUniqueLetters = zope.schema.Int(
+        title=_(u'Minimum Number of Unique letters'),
+        description=_(u'The minimum amount of unique letters that a '
+                      u'password must have. This is against passwords '
+                      u'like `aAaA0000`. All characters taken lowercase.'),
+        required=False,
+        default=None)
+
+    @zope.interface.invariant
+    def minUniqueLettersLength(task):
+        if (task.minUniqueLetters is not None
+            and task.minUniqueLetters is not None):
+            if task.minUniqueLetters > task.maxLength:
+                raise zope.interface.Invalid(
+                    u"Minimum unique letters number must not be greater than "
+                    u"the maximum length.")
+
+    minUniqueCharacters = zope.schema.Int(
+        title=_(u'Minimum Number of Unique characters'),
+        description=_(u'The minimum amount of unique characters that a '
+                      u'password must have. This is against passwords '
+                      u'like `aAaA0000`. All characters taken lowercase.'),
+        required=False,
+        default=None)
+
+    @zope.interface.invariant
+    def minUniqueCharactersLength(task):
+        if (task.minUniqueCharacters is not None
+            and task.minUniqueCharacters is not None):
+            if task.minUniqueCharacters > task.maxLength:
+                raise zope.interface.Invalid(
+                    u"Minimum unique characters length must not be greater than "
+                    u"the maximum length.")
+
 
 
 class IPasswordOptionsUtility(zope.interface.Interface):
@@ -260,3 +301,9 @@ class IPasswordOptionsUtility(zope.interface.Interface):
                       'password can be provided.'),
         required=False,
         default=None)
+
+    disallowPasswordReuse = zope.schema.Bool(
+        title=_(u'Disallow Password Reuse'),
+        description=_(u'Do not allow to set a previously set password again.'),
+        required=False,
+        default=False)

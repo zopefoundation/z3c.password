@@ -5,7 +5,17 @@ CHANGES
 0.7.0 (unreleased)
 ------------------
 
-- ...
+- Feature: Even harder password settings:
+  * ``minLowerLetter``
+  * ``minUpperLetter``
+  * ``minDigits``
+  * ``minSpecials``
+  * ``minOthers``
+  * ``minUniqueCharacters``
+  * ``minUniqueLetters``: count and do not allow less then specified number
+
+- Feature:
+  * ``disallowPasswordReuse``: do not allow to set a previously used password
 
 0.6.0 (2009-06-17)
 ------------------

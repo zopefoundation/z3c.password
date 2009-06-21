@@ -17,6 +17,7 @@ $Id$
 """
 __docformat__ = "reStructuredText"
 import datetime
+import persistent.list
 import zope.component
 from z3c.password import interfaces
 
@@ -34,15 +35,39 @@ class PrincipalMixIn(object):
     lastFailedAttempt = None
     lockOutPeriod = None
 
+    disallowPasswordReuse = None
+    previousPasswords = None
+
+    def _checkDisallowedPreviousPassword(self, password):
+        if self._disallowPasswordReuse():
+            if self.previousPasswords is not None:
+                #hack, but this should work with zope.app.authentication and
+                #z3c.authenticator
+                passwordManager = self._getPasswordManager()
+
+                for pwd in self.previousPasswords:
+                    if passwordManager.checkPassword(pwd, password):
+                        raise interfaces.PreviousPasswordNotAllowed(self)
+
     def getPassword(self):
         return super(PrincipalMixIn, self).getPassword()
 
     def setPassword(self, password, passwordManagerName=None):
+        self._checkDisallowedPreviousPassword(password)
+
         super(PrincipalMixIn, self).setPassword(password, passwordManagerName)
+
+        if self._disallowPasswordReuse():
+            if self.previousPasswords is None:
+                self.previousPasswords = persistent.list.PersistentList()
+
+            self.previousPasswords.append(self.password)
+
         self.passwordSetOn = self.now()
         self.failedAttempts = 0
         self.lastFailedAttempt = None
         self.passwordExpired = False
+
 
     password = property(getPassword, setPassword)
 
@@ -176,3 +201,16 @@ class PrincipalMixIn(object):
                 return options.maxFailedAttempts
             else:
                 return self.maxFailedAttempts
+
+    def _disallowPasswordReuse(self):
+        if self.disallowPasswordReuse is not None:
+            return self.disallowPasswordReuse
+
+        options = self._optionsUtility()
+        if options is None:
+            return self.disallowPasswordReuse
+        else:
+            if options.disallowPasswordReuse is not None:
+                return options.disallowPasswordReuse
+            else:
+                return self.disallowPasswordReuse

@@ -47,7 +47,16 @@ attributes:
 
   A time delta object after the user can try again after too many login
   failures.
-  If ``None`` login will enabled by a correct password.
+
+- ``disallowPasswordReuse``
+
+  Do not allow setting a password again that was used anytime before.
+  Set to True to enable.
+
+- ``previousPasswords``
+
+  Previous (encoded) password stored when required for
+  ``disallowPasswordReuse``
 
 There is the IPasswordOptionsUtility utility, with which you can provide
 options for some features.
@@ -71,13 +80,17 @@ and it's not None then the principal's property takes priority.
 
   Number of minutes (integer!) after the user can try again after too many login
   failures.
-  If ``None`` login will enabled by a correct password.
 
 - ``maxFailedAttempts``
 
   An integer specifying the amount of failed attempts allowed to check the
   password before the password is locked and no new password can be provided.
   (or lockOutPeriod kicks in)
+
+- ``disallowPasswordReuse``
+
+  Do not allow setting a password again that was used anytime before.
+  Set to True to enable.
 
 
 Let's now create a principal:
@@ -200,14 +213,7 @@ To check the new features we need a utility that provides the options.
   >>> import zope.interface
   >>> import zope.component
   >>> from z3c.password import interfaces
-  >>> class PasswordOptionsUtility(object):
-  ...     zope.interface.implements(interfaces.IPasswordOptionsUtility)
-  ...
-  ...     changePasswordOnNextLogin = False
-  ...     passwordExpiresAfter = None
-  ...     lockOutPeriod = None
-  ...     maxFailedAttempts = None
-
+  >>> from z3c.password.password import PasswordOptionsUtility
   >>> poptions = PasswordOptionsUtility()
   >>> zope.component.provideUtility(poptions)
 
@@ -590,7 +596,67 @@ get reset:
   1
 
 
-Edge case.
+``disallowPasswordReuse``
+-------------------------
+
+Set this option to True to disallow setting a password that was used anytime
+before.
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Set ``disallowPasswordReuse``:
+(passwords will be stored from this point on, so the first '123123' NOT)
+
+  >>> poptions.disallowPasswordReuse = True
+
+  >>> user.setPassword('234234')
+  >>> user.setPassword('345345')
+  >>> user.setPassword('456456')
+  >>> user.setPassword('123123')
+
+Setting a used password again holds an exception:
+
+  >>> user.setPassword('234234')
+  Traceback (most recent call last):
+  ...
+  PreviousPasswordNotAllowed: The password set was already used before.
+
+Something else works:
+
+  >>> user.setPassword('789789')
+
+  >>> poptions.disallowPasswordReuse = False
+
+Same works when option is set on the user:
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Set ``disallowPasswordReuse``:
+(passwords will be stored from this point on, so the first '123123' NOT)
+
+  >>> user.disallowPasswordReuse = True
+
+  >>> user.setPassword('234234')
+  >>> user.setPassword('345345')
+  >>> user.setPassword('456456')
+  >>> user.setPassword('123123')
+
+Setting a used password again holds an exception:
+
+  >>> user.setPassword('234234')
+  Traceback (most recent call last):
+  ...
+  PreviousPasswordNotAllowed: The password set was already used before.
+
+Something else works:
+
+  >>> user.setPassword('789789')
+
+
+
+Edge cases
+----------
+
 When there is no ``maxFailedAttempts`` set, we can bang on with a bad password
 forever.
 
@@ -604,6 +670,32 @@ forever.
   ...     NOW = datetime.datetime(2009, 6, 14, 13)+datetime.timedelta(minutes=x)
   ...     if user.checkPassword('456456'):
   ...         print 'bug'
+
+
+
+``failedAttempts`` needs to be reset on a successful check:
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.checkPassword('456456')
+  False
+
+``failedAttempts`` gets set on a bad check:
+
+  >>> user.failedAttempts
+  1
+  >>> user.lastFailedAttempt
+  datetime.datetime(2009, 6, 14, 17, 15)
+
+  >>> user.checkPassword('123123')
+  True
+
+Gets reset on a successful check:
+
+  >>> user.failedAttempts
+  0
+  >>> user.lastFailedAttempt is None
+  True
+
 
 
 Coverage happiness

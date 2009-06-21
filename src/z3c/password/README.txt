@@ -153,6 +153,180 @@ Force a LOT to make coverage happy:
   ...     _ =pwd.generate()
 
 
+Even higher security settings
+-----------------------------
+
+We can specify how many of a selected character group we want to have in the
+password.
+
+We want to have at least 5 lowercase letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minLowerLetter = 5
+
+  >>> pwd.verify('FOOBAR123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobAR123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobaR123')
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
+  >>> pwd.generate()
+  'soXVg[V$uw'
+
+
+We want to have at least 5 uppercase letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUpperLetter = 5
+
+  >>> pwd.verify('foobar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FOOBar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  'OvMPN3Bi'
+
+  >>> pwd.generate()
+  'l:zB.VA@MH'
+
+
+We want to have at least 5 digits in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minDigits = 5
+
+  >>> pwd.verify('foobar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FOOBa1234')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOBA12345')
+
+  >>> pwd.generate()
+  '(526vK(>Z42v'
+
+  >>> pwd.generate()
+  '3Z&Mtq35Y840'
+
+
+We want to have at least 5 specials in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minSpecials = 5
+
+  >>> pwd.verify('foo(bar)')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FO.#(Ba1)')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fO.,;()5')
+
+  >>> pwd.generate()
+  '?d{*~2q|P'
+
+  >>> pwd.generate()
+  '(8a5\\(^}vB'
+
+We want to have at least 5 others in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minOthers = 5
+
+  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4))
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4)+unichr(0x0e1))
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOO'+unichr(0x0e1)*5)
+
+
+Generating passwords with others not yet supported
+
+  #>>> pwd.generate()
+  #'?d{*~2q|P'
+  #
+  #>>> pwd.generate()
+  #'(8a5\\(^}vB'
+
+We want to have at least 5 different characters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUniqueCharacters = 5
+
+  >>> pwd.verify('foofoo1212')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueCharacters
+
+  >>> pwd.verify('FOOfoo2323')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueCharacters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  '{l%ix~t8R'
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
+
+We want to have at least 5 different letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUniqueLetters = 5
+
+  >>> pwd.verify('foofoo1212')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueLetters
+
+  >>> pwd.verify('FOOBfoob2323')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueLetters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  '{l%ix~t8R'
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
 
 The Password Field
 ------------------
@@ -169,6 +343,8 @@ Let's now create the field:
   >>> from zope.app.authentication.password import PlainTextPasswordManager
   >>> from z3c.password import field
 
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+
   >>> pwdField = field.Password(
   ...     __name__='password',
   ...     title=u'Password',
@@ -181,4 +357,3 @@ Let's validate a value:
   Traceback (most recent call last):
   ...
   TooShortPassword
-

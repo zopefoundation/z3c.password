@@ -64,6 +64,10 @@ class HighSecurityPasswordUtility(object):
         interfaces.IHighSecurityPasswordUtility['minSpecials'])
     minOthers = FieldProperty(
         interfaces.IHighSecurityPasswordUtility['minOthers'])
+    minUniqueCharacters = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minUniqueCharacters'])
+    minUniqueLetters = FieldProperty(
+        interfaces.IHighSecurityPasswordUtility['minUniqueLetters'])
 
     LOWERLETTERS = string.letters[:26]
     UPPERLETTERS = string.letters[26:]
@@ -75,12 +79,22 @@ class HighSecurityPasswordUtility(object):
                    u'for more details.')
 
     def __init__(self, minLength=8, maxLength=12, groupMax=6,
-                 maxSimilarity=0.6, seed=None):
+                 maxSimilarity=0.6, seed=None,
+                 minLowerLetter=None, minUpperLetter=None, minDigits=None,
+                 minSpecials=None, minOthers=None,
+                 minUniqueCharacters=None, minUniqueLetters=None):
         self.minLength = minLength
         self.maxLength = maxLength
         self.groupMax = groupMax
         self.maxSimilarity = maxSimilarity
         self.random = random.Random(seed or time.time())
+        self.minLowerLetter = minLowerLetter
+        self.minUpperLetter = minUpperLetter
+        self.minDigits = minDigits
+        self.minSpecials = minSpecials
+        self.minOthers = minOthers
+        self.minUniqueCharacters = minUniqueCharacters
+        self.minUniqueLetters = minUniqueLetters
 
     def _checkSimilarity(self, new, ref):
         sm = difflib.SequenceMatcher(None, new, ref)
@@ -107,11 +121,16 @@ class HighSecurityPasswordUtility(object):
         num_digits = 0
         num_specials = 0
         num_others = 0
+        uniqueChars = set()
+        uniqueLetters = set()
         for char in new:
+            uniqueChars.add(char.lower())
             if char in self.LOWERLETTERS:
                 num_lower_letters += 1
+                uniqueLetters.add(char.lower())
             elif char in self.UPPERLETTERS:
                 num_upper_letters += 1
+                uniqueLetters.add(char.lower())
             elif char in self.DIGITS:
                 num_digits += 1
             elif char in self.SPECIALS:
@@ -145,11 +164,15 @@ class HighSecurityPasswordUtility(object):
             and num_others < self.minOthers):
             raise interfaces.TooFewGroupCharacters()
 
-        return
+        if (self.minUniqueCharacters is not None
+            and len(uniqueChars) < self.minUniqueCharacters):
+            raise interfaces.TooFewUniqueCharacters()
 
-    def _randomOther(self):
-        #override if you want an other range
-        return unichr(self.random.randint(0x0a1, 0x0ff))
+        if (self.minUniqueLetters is not None
+            and len(uniqueLetters) < self.minUniqueLetters):
+            raise interfaces.TooFewUniqueLetters()
+
+        return
 
     def generate(self, ref=None):
         '''See interfaces.IHighSecurityPasswordUtility'''
@@ -163,26 +186,8 @@ class HighSecurityPasswordUtility(object):
             chars = self.LOWERLETTERS + self.UPPERLETTERS + \
                     self.DIGITS + self.SPECIALS
 
-            if (self.minOthers is not None
-                and self.minOthers > 0):
-                # unichr(0x0ffff) is a placeholder for Others
-                # this is deliberately this way, because a unicode
-                # range of 0x0a1...0x010ffff is rather a big string
-                chars += unichr(0x0ffff)
-
             for count in xrange(length):
                 new += self.random.choice(chars)
-
-            if (self.minOthers is not None
-                and self.minOthers > 0):
-                # replace now placeholders with random other characters
-                newest = ''
-                for c in new:
-                    if c == unichr(0x0ffff):
-                        newest += self._randomOther()
-                    else:
-                        newest += c
-                new = newest
 
             # Verify the new password
             try:
@@ -192,3 +197,28 @@ class HighSecurityPasswordUtility(object):
             else:
                 verified = True
         return new
+
+class PasswordOptionsUtility(object):
+    """An implementation of the security options."""
+    zope.interface.implements(interfaces.IPasswordOptionsUtility)
+
+    changePasswordOnNextLogin = FieldProperty(
+        interfaces.IPasswordOptionsUtility['changePasswordOnNextLogin'])
+    passwordExpiresAfter = FieldProperty(
+        interfaces.IPasswordOptionsUtility['passwordExpiresAfter'])
+    lockOutPeriod = FieldProperty(
+        interfaces.IPasswordOptionsUtility['lockOutPeriod'])
+    maxFailedAttempts = FieldProperty(
+        interfaces.IPasswordOptionsUtility['maxFailedAttempts'])
+    disallowPasswordReuse = FieldProperty(
+        interfaces.IPasswordOptionsUtility['disallowPasswordReuse'])
+
+    def __init__(self, changePasswordOnNextLogin=None,
+                 passwordExpiresAfter=None,
+                 lockOutPeriod=None, maxFailedAttempts=None,
+                 disallowPasswordReuse=None):
+        self.changePasswordOnNextLogin = changePasswordOnNextLogin
+        self.passwordExpiresAfter = passwordExpiresAfter
+        self.lockOutPeriod = lockOutPeriod
+        self.maxFailedAttempts = maxFailedAttempts
+        self.disallowPasswordReuse = disallowPasswordReuse
