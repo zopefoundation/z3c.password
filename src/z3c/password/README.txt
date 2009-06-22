@@ -153,13 +153,187 @@ Force a LOT to make coverage happy:
   ...     _ =pwd.generate()
 
 
+Even higher security settings
+-----------------------------
+
+We can specify how many of a selected character group we want to have in the
+password.
+
+We want to have at least 5 lowercase letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minLowerLetter = 5
+
+  >>> pwd.verify('FOOBAR123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobAR123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobaR123')
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
+  >>> pwd.generate()
+  'soXVg[V$uw'
+
+
+We want to have at least 5 uppercase letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUpperLetter = 5
+
+  >>> pwd.verify('foobar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FOOBar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  'OvMPN3Bi'
+
+  >>> pwd.generate()
+  'l:zB.VA@MH'
+
+
+We want to have at least 5 digits in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minDigits = 5
+
+  >>> pwd.verify('foobar123')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FOOBa1234')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOBA12345')
+
+  >>> pwd.generate()
+  '(526vK(>Z42v'
+
+  >>> pwd.generate()
+  '3Z&Mtq35Y840'
+
+
+We want to have at least 5 specials in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minSpecials = 5
+
+  >>> pwd.verify('foo(bar)')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('FO.#(Ba1)')
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fO.,;()5')
+
+  >>> pwd.generate()
+  '?d{*~2q|P'
+
+  >>> pwd.generate()
+  '(8a5\\(^}vB'
+
+We want to have at least 5 others in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minOthers = 5
+
+  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4))
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4)+unichr(0x0e1))
+  Traceback (most recent call last):
+  ...
+  TooFewGroupCharacters
+
+  >>> pwd.verify('fOO'+unichr(0x0e1)*5)
+
+
+Generating passwords with others not yet supported
+
+  #>>> pwd.generate()
+  #'?d{*~2q|P'
+  #
+  #>>> pwd.generate()
+  #'(8a5\\(^}vB'
+
+We want to have at least 5 different characters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUniqueCharacters = 5
+
+  >>> pwd.verify('foofoo1212')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueCharacters
+
+  >>> pwd.verify('FOOfoo2323')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueCharacters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  '{l%ix~t8R'
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
+
+We want to have at least 5 different letters in the password:
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
+  >>> pwd.minUniqueLetters = 5
+
+  >>> pwd.verify('foofoo1212')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueLetters
+
+  >>> pwd.verify('FOOBfoob2323')
+  Traceback (most recent call last):
+  ...
+  TooFewUniqueLetters
+
+  >>> pwd.verify('fOOBAR123')
+
+  >>> pwd.generate()
+  '{l%ix~t8R'
+
+  >>> pwd.generate()
+  'Us;iwbzM[J'
+
 
 The Password Field
 ------------------
 
 The password field can be used to specify an advanced password. It extends the
 standard ``zope.schema`` password field with the ``checker`` attribute. The
-checker is either a password utility (as specified above) or the name of sucha
+checker is either a password utility (as specified above) or the name of such a
 a utility. The checker is used to verify whether a password is acceptable or
 not.
 
@@ -168,6 +342,8 @@ Let's now create the field:
   >>> import datetime
   >>> from zope.app.authentication.password import PlainTextPasswordManager
   >>> from z3c.password import field
+
+  >>> pwd = password.HighSecurityPasswordUtility(seed=8)
 
   >>> pwdField = field.Password(
   ...     __name__='password',
@@ -182,3 +358,102 @@ Let's validate a value:
   ...
   TooShortPassword
 
+Validation must work on bound fields too:
+
+Let's now create a principal:
+
+  >>> from zope.app.authentication import principalfolder
+  >>> from z3c.password import principal
+
+  >>> class MyPrincipal(principal.PrincipalMixIn,
+  ...                   principalfolder.InternalPrincipal):
+  ...     pass
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Bind the field:
+
+  >>> bound = pwdField.bind(user)
+
+  >>> bound.validate(u'fooBar12')
+  >>> bound.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+Let's create a principal without the PrincipalMixIn:
+
+  >>> user = principalfolder.InternalPrincipal('srichter', '123123',
+  ...     u'Stephan Richter')
+
+Bind the field:
+
+  >>> bound = pwdField.bind(user)
+
+  >>> bound.validate(u'fooBar12')
+  >>> bound.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+
+Other common usecase is to do a utility and specify it's name as checker.
+
+  >>> import zope.component
+  >>> zope.component.provideUtility(pwd, name='my password checker')
+
+Recreate the field:
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password',
+  ...     checker='my password checker')
+
+Let's validate a value:
+
+  >>> pwdField.validate(u'fooBar12')
+  >>> pwdField.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+
+Edge cases.
+
+No checker specified.
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password')
+
+Validation silently succeeds with a checker:
+
+  >>> pwdField.validate(u'fooBar12')
+  >>> pwdField.validate(u'fooBar')
+
+Bad utility name.
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password',
+  ...     checker='foobar password checker')
+
+Burps on the utility lookup as expected:
+
+  >>> pwdField.validate(u'fooBar12')
+  Traceback (most recent call last):
+  ...
+  ComponentLookupError:...
+
+Bound object does not have the property:
+
+  >>> pwdField = field.Password(
+  ...     __name__='foobar',
+  ...     title=u'Password',
+  ...     checker=pwd)
+
+  >>> bound = pwdField.bind(user)
+
+Validation silently succeeds:
+
+  >>> bound.validate(u'fooBar12')

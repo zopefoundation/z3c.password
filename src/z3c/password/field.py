@@ -30,7 +30,7 @@ class Password(zope.schema.Password):
     def checker(self):
         if self._checker is None:
             return None
-        if not isinstance(self._checker, (str, unicode)):
+        if not isinstance(self._checker, basestring):
             return self._checker
         return zope.component.getUtility(
             interfaces.IPasswordUtility, self._checker)
@@ -43,4 +43,15 @@ class Password(zope.schema.Password):
                 old = self.get(self.context)
             except AttributeError:
                 pass
-        self.checker.verify(value, old)
+        checker = self.checker
+        if checker is not None:
+            self.checker.verify(value, old)
+
+        #try to check for disallowPasswordReuse here too, to raise
+        #problems ASAP
+        if self.context is not None:
+            try:
+                self.context._checkDisallowedPreviousPassword(value)
+            except AttributeError:
+                #if _checkDisallowedPreviousPassword is missing
+                pass
