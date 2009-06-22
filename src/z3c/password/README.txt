@@ -333,7 +333,7 @@ The Password Field
 
 The password field can be used to specify an advanced password. It extends the
 standard ``zope.schema`` password field with the ``checker`` attribute. The
-checker is either a password utility (as specified above) or the name of sucha
+checker is either a password utility (as specified above) or the name of such a
 a utility. The checker is used to verify whether a password is acceptable or
 not.
 
@@ -357,3 +357,103 @@ Let's validate a value:
   Traceback (most recent call last):
   ...
   TooShortPassword
+
+Validation must work on bound fields too:
+
+Let's now create a principal:
+
+  >>> from zope.app.authentication import principalfolder
+  >>> from z3c.password import principal
+
+  >>> class MyPrincipal(principal.PrincipalMixIn,
+  ...                   principalfolder.InternalPrincipal):
+  ...     pass
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Bind the field:
+
+  >>> bound = pwdField.bind(user)
+
+  >>> bound.validate(u'fooBar12')
+  >>> bound.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+Let's create a principal without the PrincipalMixIn:
+
+  >>> user = principalfolder.InternalPrincipal('srichter', '123123',
+  ...     u'Stephan Richter')
+
+Bind the field:
+
+  >>> bound = pwdField.bind(user)
+
+  >>> bound.validate(u'fooBar12')
+  >>> bound.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+
+Other common usecase is to do a utility and specify it's name as checker.
+
+  >>> import zope.component
+  >>> zope.component.provideUtility(pwd, name='my password checker')
+
+Recreate the field:
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password',
+  ...     checker='my password checker')
+
+Let's validate a value:
+
+  >>> pwdField.validate(u'fooBar12')
+  >>> pwdField.validate(u'fooBar')
+  Traceback (most recent call last):
+  ...
+  TooShortPassword
+
+
+Edge cases.
+
+No checker specified.
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password')
+
+Validation silently succeeds with a checker:
+
+  >>> pwdField.validate(u'fooBar12')
+  >>> pwdField.validate(u'fooBar')
+
+Bad utility name.
+
+  >>> pwdField = field.Password(
+  ...     __name__='password',
+  ...     title=u'Password',
+  ...     checker='foobar password checker')
+
+Burps on the utility lookup as expected:
+
+  >>> pwdField.validate(u'fooBar12')
+  Traceback (most recent call last):
+  ...
+  ComponentLookupError:...
+
+Bound object does not have the property:
+
+  >>> pwdField = field.Password(
+  ...     __name__='foobar',
+  ...     title=u'Password',
+  ...     checker=pwd)
+
+  >>> bound = pwdField.bind(user)
+
+Validation silently succeeds:
+
+  >>> bound.validate(u'fooBar12')
