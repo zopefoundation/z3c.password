@@ -5,7 +5,9 @@ CHANGES
 0.8.0 (unreleased)
 ------------------
 
-- ...
+- Feature: ``passwordOptionsUtilityName`` property on the ``PrincipalMixIn``.
+  This allows to set different options for a set of users instead of storing
+  the direct values on the principal.
 
 
 0.7.0 (2009-06-22)

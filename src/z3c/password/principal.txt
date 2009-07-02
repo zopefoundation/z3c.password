@@ -58,6 +58,14 @@ attributes:
   Previous (encoded) password stored when required for
   ``disallowPasswordReuse``
 
+- ``passwordOptionsUtilityName``
+
+  Allows to specify an IPasswordOptionsUtility name to look up instead of
+  the default. This utility must be registered otherwise there will be an
+  exception.
+  This allows to set different options for a set of users instead of storing
+  the direct values on the principal.
+
 There is the IPasswordOptionsUtility utility, with which you can provide
 options for some features.
 Strategy is that if the same option/property exists on the principal
@@ -652,6 +660,41 @@ Something else works:
 
   >>> user.setPassword('789789')
 
+
+``passwordOptionsUtilityName``
+------------------------------
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+
+Until the property is None, the user will get the options from the default
+utility:
+
+  >>> user._optionsUtility() is poptions
+  True
+
+A wrong (that means the named utility is not registered) name causes an
+exception:
+
+  >>> user.passwordOptionsUtilityName = 'foobar'
+
+  >>> user._optionsUtility() is poptions
+  Traceback (most recent call last):
+  ...
+  ComponentLookupError: (<InterfaceClass z3c.password.interfaces.IPasswordOptionsUtility>, 'foobar')
+
+Providing a new utility with a name:
+
+  >>> namedOptions = PasswordOptionsUtility()
+  >>> zope.component.provideUtility(namedOptions, name='otherPasswordOptions')
+
+And setting the name on the user:
+
+  >>> user.passwordOptionsUtilityName = 'otherPasswordOptions'
+
+Works:
+
+  >>> user._optionsUtility() is namedOptions
+  True
 
 
 Edge cases

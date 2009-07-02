@@ -38,6 +38,8 @@ class PrincipalMixIn(object):
     disallowPasswordReuse = None
     previousPasswords = None
 
+    passwordOptionsUtilityName = None
+
     def _checkDisallowedPreviousPassword(self, password):
         if self._disallowPasswordReuse():
             if self.previousPasswords is not None:
@@ -160,6 +162,11 @@ class PrincipalMixIn(object):
         return self.passwordSetOn + expires
 
     def _optionsUtility(self):
+        if self.passwordOptionsUtilityName:
+            #if we have a utility name, then it must be there
+            return zope.component.getUtility(
+                interfaces.IPasswordOptionsUtility,
+                name=self.passwordOptionsUtilityName)
         return zope.component.queryUtility(
             interfaces.IPasswordOptionsUtility, default=None)
 
