@@ -660,6 +660,26 @@ Something else works:
 
   >>> user.setPassword('789789')
 
+Corner case. The password ``None`` is a special case, it signals that the
+user is disabled.
+
+But ``None`` works only with the ``Plain Text`` password manager.
+
+  >>> user.setPassword('790789', passwordManagerName="Plain Text")
+
+That means, it should be possible to set the password to ``None`` anytime,
+regardless of disallowPasswordReuse.
+
+  >>> user.setPassword(None)
+
+  >>> user.setPassword('890789')
+
+  >>> user.setPassword(None)
+
+  >>> user.setPassword('891789')
+
+  >>> user.setPassword(None)
+
 
 ``passwordOptionsUtilityName``
 ------------------------------

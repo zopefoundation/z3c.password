@@ -42,7 +42,7 @@ class PrincipalMixIn(object):
 
     def _checkDisallowedPreviousPassword(self, password):
         if self._disallowPasswordReuse():
-            if self.previousPasswords is not None:
+            if self.previousPasswords is not None and password is not None:
                 #hack, but this should work with zope.app.authentication and
                 #z3c.authenticator
                 passwordManager = self._getPasswordManager()
@@ -63,7 +63,8 @@ class PrincipalMixIn(object):
             if self.previousPasswords is None:
                 self.previousPasswords = persistent.list.PersistentList()
 
-            self.previousPasswords.append(self.password)
+            if self.password is not None:
+                self.previousPasswords.append(self.password)
 
         self.passwordSetOn = self.now()
         self.failedAttempts = 0
