@@ -5,7 +5,8 @@ CHANGES
 0.8.0 (unreleased)
 ------------------
 
-- ...
+- Fix: ``PrincipalMixIn.passwordSetOn`` happens to be ``None`` in case the
+  class is mixed in after the user was created, that caused a bug.
 
 0.7.3 (2009-12-08)
 ------------------

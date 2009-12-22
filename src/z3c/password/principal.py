@@ -160,6 +160,8 @@ class PrincipalMixIn(object):
         expires = self._passwordExpiresAfter()
         if expires is None:
             return None
+        if self.passwordSetOn is None:
+            return None
         return self.passwordSetOn + expires
 
     def _optionsUtility(self):

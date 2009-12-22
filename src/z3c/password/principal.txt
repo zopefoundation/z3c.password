@@ -761,6 +761,19 @@ Gets reset on a successful check:
 
 
 
+``passwordSetOn`` might happen to be None.
+In case the mixin gets applied to the user object after it's been created
+the ``passwordSetOn`` property will be None. That caused a bug.
+
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.passwordSetOn = None
+
+  >>> user.checkPassword('123123')
+  True
+
+
+
+
 Coverage happiness
 ------------------
 
