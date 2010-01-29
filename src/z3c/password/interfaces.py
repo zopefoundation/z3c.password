@@ -43,6 +43,25 @@ class TooManyGroupCharacters(InvalidPassword):
 class TooFewGroupCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough characters of one group.''')
 
+class TooFewGroupCharactersLowerLetter(TooFewGroupCharacters):
+    __doc__ = _(
+        '''Password does not contain enough characters of lowercase letters.''')
+
+class TooFewGroupCharactersUpperLetter(TooFewGroupCharacters):
+    __doc__ = _(
+        '''Password does not contain enough characters of uppercase letters.''')
+
+class TooFewGroupCharactersDigits(TooFewGroupCharacters):
+    __doc__ = _('''Password does not contain enough characters of digits.''')
+
+class TooFewGroupCharactersSpecials(TooFewGroupCharacters):
+    __doc__ = _(
+        '''Password does not contain enough characters of special characters.''')
+
+class TooFewGroupCharactersOthers(TooFewGroupCharacters):
+    __doc__ = _(
+        '''Password does not contain enough characters of other characters.''')
+
 class TooFewUniqueCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough unique characters.''')
 

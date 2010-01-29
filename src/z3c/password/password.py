@@ -146,23 +146,23 @@ class HighSecurityPasswordUtility(object):
 
         if (self.minLowerLetter is not None
             and num_lower_letters < self.minLowerLetter):
-            raise interfaces.TooFewGroupCharacters()
+            raise interfaces.TooFewGroupCharactersLowerLetter()
 
         if (self.minUpperLetter is not None
             and num_upper_letters < self.minUpperLetter):
-            raise interfaces.TooFewGroupCharacters()
+            raise interfaces.TooFewGroupCharactersUpperLetter()
 
         if (self.minDigits is not None
             and num_digits < self.minDigits):
-            raise interfaces.TooFewGroupCharacters()
+            raise interfaces.TooFewGroupCharactersDigits()
 
         if (self.minSpecials is not None
             and num_specials < self.minSpecials):
-            raise interfaces.TooFewGroupCharacters()
+            raise interfaces.TooFewGroupCharactersSpecials()
 
         if (self.minOthers is not None
             and num_others < self.minOthers):
-            raise interfaces.TooFewGroupCharacters()
+            raise interfaces.TooFewGroupCharactersOthers()
 
         if (self.minUniqueCharacters is not None
             and len(uniqueChars) < self.minUniqueCharacters):

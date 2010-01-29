@@ -141,8 +141,7 @@ class PrincipalMixIn(object):
             return None
 
     def checkFailedAttempt(self):
-        #failed attempt, record it, increase counter
-        #(in case we have to)
+        #failed attempt, record it, increase counter (in case we have to)
         validRequest = True
         fac = self._failedAttemptCheck()
         if fac == interfaces.TML_CHECK_ALL:
