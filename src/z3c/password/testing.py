@@ -30,3 +30,15 @@ def setUp(test):
 
 def tearDown(test):
     placelesssetup.tearDown(test)
+
+
+class TestBrowserRequest():
+    """pretty dumb test request"""
+
+    def __init__(self, url, method='GET'):
+        self.URL = url
+        self.method = method
+        self.interaction = None
+
+    def getURL(self):
+        return self.URL

@@ -19,6 +19,8 @@ __docformat__ = "reStructuredText"
 import datetime
 import persistent.list
 import zope.component
+from zope.security.management import getInteraction
+
 from z3c.password import interfaces
 
 class PrincipalMixIn(object):
@@ -31,6 +33,7 @@ class PrincipalMixIn(object):
                              #e.g. for changePasswordOnNextLogin
 
     failedAttempts = 0
+    failedAttemptCheck = interfaces.TML_CHECK_ALL
     maxFailedAttempts = None
     lastFailedAttempt = None
     lockOutPeriod = None
@@ -115,9 +118,7 @@ class PrincipalMixIn(object):
             add = 0
         else:
             #failed attempt, record it, increase counter
-            self.failedAttempts += 1
-            self.lastFailedAttempt = self.now()
-            add = 1
+            add = self.checkFailedAttempt()
 
         # If the maximum amount of failures has been reached notify the
         # system by raising an error.
@@ -131,6 +132,46 @@ class PrincipalMixIn(object):
             self.lastFailedAttempt = None
 
         return same
+
+    def _getRequest(self):
+        interaction = getInteraction()
+        try:
+            return interaction.participations[0]
+        except IndexError:
+            return None
+
+    def checkFailedAttempt(self):
+        #failed attempt, record it, increase counter
+        #(in case we have to)
+        validRequest = True
+        fac = self._failedAttemptCheck()
+        if fac == interfaces.TML_CHECK_ALL:
+            validRequest = True
+        else:
+            request = self._getRequest()
+            if request is None:
+                validRequest = True
+            else:
+                if fac == interfaces.TML_CHECK_NONRESOURCE:
+                    url = request.getURL()
+                    if '/@@/' in url:
+                        #this is a resource
+                        validRequest = False
+                    else:
+                        validRequest = True
+                elif fac == interfaces.TML_CHECK_POSTONLY:
+                    if request.method == 'POST':
+                        #this is a POST request
+                        validRequest = True
+                    else:
+                        validRequest = False
+
+        if validRequest:
+            self.failedAttempts += 1
+            self.lastFailedAttempt = self.now()
+            return 1
+        else:
+            return 0
 
     def tooManyLoginFailures(self, add = 0):
         attempts = self._maxFailedAttempts()
@@ -198,6 +239,19 @@ class PrincipalMixIn(object):
                 return datetime.timedelta(minutes=options.lockOutPeriod)
             else:
                 return self.lockOutPeriod
+
+    def _failedAttemptCheck(self):
+        if self.failedAttemptCheck is not None:
+            return self.failedAttemptCheck
+
+        options = self._optionsUtility()
+        if options is None:
+            return self.failedAttemptCheck
+        else:
+            if options.failedAttemptCheck is not None:
+                return options.failedAttemptCheck
+            else:
+                return self.failedAttemptCheck
 
     def _maxFailedAttempts(self):
         if self.maxFailedAttempts is not None:

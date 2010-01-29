@@ -70,6 +70,10 @@ class TooManyLoginFailures(Exception):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
 
+TML_CHECK_ALL = 'all'
+TML_CHECK_NONRESOURCE = 'nonres'
+TML_CHECK_POSTONLY = 'post'
+
 class AccountLocked(Exception):
     __doc__ = _('The account is locked, because the password was '
                 'entered incorrectly too often.')
@@ -301,6 +305,14 @@ class IPasswordOptionsUtility(zope.interface.Interface):
                       'password can be provided.'),
         required=False,
         default=None)
+
+    failedAttemptCheck = zope.schema.Choice(
+        title=_(u'Failed password check method'),
+        description=_(u'Failed password check method. '
+                      'All requests, non-reqource requests, POST requests.'),
+        required=False,
+        values=[TML_CHECK_ALL, TML_CHECK_NONRESOURCE, TML_CHECK_POSTONLY],
+        default=TML_CHECK_ALL )
 
     disallowPasswordReuse = zope.schema.Bool(
         title=_(u'Disallow Password Reuse'),
