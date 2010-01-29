@@ -167,12 +167,12 @@ We want to have at least 5 lowercase letters in the password:
   >>> pwd.verify('FOOBAR123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersLowerLetter
 
   >>> pwd.verify('foobAR123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersLowerLetter
 
   >>> pwd.verify('foobaR123')
 
@@ -191,12 +191,12 @@ We want to have at least 5 uppercase letters in the password:
   >>> pwd.verify('foobar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersUpperLetter
 
   >>> pwd.verify('FOOBar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersUpperLetter
 
   >>> pwd.verify('fOOBAR123')
 
@@ -215,12 +215,12 @@ We want to have at least 5 digits in the password:
   >>> pwd.verify('foobar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersDigits
 
   >>> pwd.verify('FOOBa1234')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersDigits
 
   >>> pwd.verify('fOBA12345')
 
@@ -239,12 +239,12 @@ We want to have at least 5 specials in the password:
   >>> pwd.verify('foo(bar)')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersSpecials
 
   >>> pwd.verify('FO.#(Ba1)')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersSpecials
 
   >>> pwd.verify('fO.,;()5')
 
@@ -262,12 +262,12 @@ We want to have at least 5 others in the password:
   >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4))
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersOthers
 
   >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4)+unichr(0x0e1))
   Traceback (most recent call last):
   ...
-  TooFewGroupCharacters
+  TooFewGroupCharactersOthers
 
   >>> pwd.verify('fOO'+unichr(0x0e1)*5)
 

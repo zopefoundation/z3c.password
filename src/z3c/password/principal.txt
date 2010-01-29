@@ -104,6 +104,7 @@ and it's not None then the principal's property takes priority.
 Let's now create a principal:
 
   >>> from zope.app.authentication import principalfolder
+  >>> from z3c.password import interfaces
   >>> from z3c.password import principal
 
   >>> class MyPrincipal(principal.PrincipalMixIn,
@@ -129,6 +130,9 @@ The good password validates fine:
 
   >>> user.checkPassword('123123')
   True
+
+failedAttempts
+--------------
 
 Initially, the amount of failed attempts is zero, ...
 
@@ -180,6 +184,132 @@ Let's now reset the failure count.
 
   >>> user.failedAttempts = 0
 
+
+failedAttemptCheck, non-resource
+---------------------------------
+
+  >>> import zope.security.management
+  >>> from z3c.password import testing
+
+Set the option on the user:
+
+  >>> user.failedAttemptCheck = interfaces.TML_CHECK_NONRESOURCE
+
+Create our dummy request:
+Watch out! this is a request for a resource (/@@/)
+
+  >>> request = testing.TestBrowserRequest('http://localhost/@@/logo.gif')
+  >>> zope.security.management.getInteraction().add(request)
+
+Reset the counter:
+
+  >>> user.failedAttempts = 0
+
+Here's the password checking.
+The password is wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But the counter is not incremented.
+
+  >>> user.failedAttempts
+  0
+
+Try a non-resource request.
+
+  >>> zope.security.management.getInteraction().remove(request)
+  >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
+  ...     'POST')
+  >>> zope.security.management.getInteraction().add(request)
+
+Password is still wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But now the counter is incremented.
+
+  >>> user.failedAttempts
+  1
+
+Try now without a request in effect (as an edge case):
+
+  >>> zope.security.management.getInteraction().remove(request)
+
+  >>> user.failedAttempts = 0
+
+A bad password gets counted.
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+failedAttemptCheck, POST
+-------------------------
+
+Set the option on the user:
+
+  >>> user.failedAttemptCheck = interfaces.TML_CHECK_POSTONLY
+
+Create our dummy request:
+Watch out! this is a normal GET request.
+
+  >>> request = testing.TestBrowserRequest('http://localhost/index.html', 'GET')
+  >>> zope.security.management.getInteraction().add(request)
+
+  >>> user.failedAttempts = 0
+
+Here's the password checking.
+The password is wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But the counter is not incremented.
+
+  >>> user.failedAttempts
+  0
+
+Try a POST request. What a loginform usually is.
+(Note, that the request gets examined only if the password does not match.)
+
+  >>> zope.security.management.getInteraction().remove(request)
+  >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
+  ...     'POST')
+  >>> zope.security.management.getInteraction().add(request)
+
+Password is still wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But now the counter is incremented.
+
+  >>> user.failedAttempts
+  1
+
+Try now without a request in effect (as an edge case):
+
+  >>> zope.security.management.getInteraction().remove(request)
+
+  >>> user.failedAttempts = 0
+
+A bad password gets counted.
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+Reset the option on the user:
+
+  >>> user.failedAttemptCheck = None
+
+Expired password
+----------------
+
 Next we expire the password:
 
   >>> NOW = datetime.datetime(2009, 6, 14, 13, 0) + datetime.timedelta(181)
@@ -220,7 +350,6 @@ To check the new features we need a utility that provides the options.
 
   >>> import zope.interface
   >>> import zope.component
-  >>> from z3c.password import interfaces
   >>> from z3c.password.password import PasswordOptionsUtility
   >>> poptions = PasswordOptionsUtility()
   >>> zope.component.provideUtility(poptions)
@@ -399,6 +528,125 @@ The admin(?) has to reset the password of the user.
 
   >>> user.checkPassword('234234')
   True
+
+failedAttemptCheck, non-resource
+---------------------------------
+
+Set the option on the utility:
+
+  >>> poptions.failedAttemptCheck = interfaces.TML_CHECK_NONRESOURCE
+
+Create our dummy request:
+Watch out! this is a request for a resource (/@@/)
+
+  >>> request = testing.TestBrowserRequest('http://localhost/@@/logo.gif')
+  >>> zope.security.management.getInteraction().add(request)
+
+Reset the counter:
+
+  >>> user.failedAttempts = 0
+
+Here's the password checking.
+The password is wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But the counter is not incremented.
+
+  >>> user.failedAttempts
+  0
+
+Try a non-resource request.
+
+  >>> zope.security.management.getInteraction().remove(request)
+  >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
+  ...     'POST')
+  >>> zope.security.management.getInteraction().add(request)
+
+Password is still wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But now the counter is incremented.
+
+  >>> user.failedAttempts
+  1
+
+Try now without a request in effect (as an edge case):
+
+  >>> zope.security.management.getInteraction().remove(request)
+
+  >>> user.failedAttempts = 0
+
+A bad password gets counted.
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+failedAttemptCheck, POST
+-------------------------
+
+Set the option on the utility:
+
+  >>> poptions.failedAttemptCheck = interfaces.TML_CHECK_POSTONLY
+
+Create our dummy request:
+Watch out! this is a normal GET request.
+
+  >>> request = testing.TestBrowserRequest('http://localhost/index.html', 'GET')
+  >>> zope.security.management.getInteraction().add(request)
+
+  >>> user.failedAttempts = 0
+
+Here's the password checking.
+The password is wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But the counter is not incremented.
+
+  >>> user.failedAttempts
+  0
+
+Try a POST request. What a loginform usually is.
+(Note, that the request gets examined only if the password does not match.)
+
+  >>> zope.security.management.getInteraction().remove(request)
+  >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
+  ...     'POST')
+  >>> zope.security.management.getInteraction().add(request)
+
+Password is still wrong.
+
+  >>> user.checkPassword('456456')
+  False
+
+But now the counter is incremented.
+
+  >>> user.failedAttempts
+  1
+
+Try now without a request in effect (as an edge case):
+
+  >>> zope.security.management.getInteraction().remove(request)
+
+  >>> user.failedAttempts = 0
+
+A bad password gets counted.
+
+  >>> user.checkPassword('456456')
+  False
+  >>> user.failedAttempts
+  1
+
+Reset the option on the utility:
+
+  >>> poptions.failedAttemptCheck = None
 
 
 Timed lockout
