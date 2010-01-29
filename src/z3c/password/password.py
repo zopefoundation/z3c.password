@@ -212,13 +212,18 @@ class PasswordOptionsUtility(object):
         interfaces.IPasswordOptionsUtility['maxFailedAttempts'])
     disallowPasswordReuse = FieldProperty(
         interfaces.IPasswordOptionsUtility['disallowPasswordReuse'])
+    failedAttemptCheck = FieldProperty(
+        interfaces.IPasswordOptionsUtility['failedAttemptCheck'])
 
     def __init__(self, changePasswordOnNextLogin=None,
                  passwordExpiresAfter=None,
                  lockOutPeriod=None, maxFailedAttempts=None,
-                 disallowPasswordReuse=None):
+                 disallowPasswordReuse=None,
+                 failedAttemptCheck=None):
         self.changePasswordOnNextLogin = changePasswordOnNextLogin
         self.passwordExpiresAfter = passwordExpiresAfter
         self.lockOutPeriod = lockOutPeriod
         self.maxFailedAttempts = maxFailedAttempts
         self.disallowPasswordReuse = disallowPasswordReuse
+        if failedAttemptCheck is not None:
+            self.failedAttemptCheck = failedAttemptCheck
