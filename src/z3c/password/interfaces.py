@@ -70,7 +70,7 @@ class TooManyLoginFailures(Exception):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
 
-TML_CHECK_ALL = 'all'
+TML_CHECK_ALL = None
 TML_CHECK_NONRESOURCE = 'nonres'
 TML_CHECK_POSTONLY = 'post'
 

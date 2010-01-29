@@ -225,5 +225,4 @@ class PasswordOptionsUtility(object):
         self.lockOutPeriod = lockOutPeriod
         self.maxFailedAttempts = maxFailedAttempts
         self.disallowPasswordReuse = disallowPasswordReuse
-        if failedAttemptCheck is not None:
-            self.failedAttemptCheck = failedAttemptCheck
+        self.failedAttemptCheck = failedAttemptCheck
