@@ -5,7 +5,12 @@ CHANGES
 0.8.0 (unreleased)
 ------------------
 
-- ...
+- Feature: ``failedAttemptCheck``
+  * increment failedAttempts on all/any request (this is the default)
+  * increment failedAttempts only on non-resource requests
+  * increment failedAttempts only on POST requests
+
+- Feature: more specific exceptions on new password verification.
 
 0.7.4 (2009-12-22)
 ------------------
