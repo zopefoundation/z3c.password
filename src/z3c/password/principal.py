@@ -81,12 +81,41 @@ class PrincipalMixIn(object):
         #hook to facilitate testing and easier override
         return datetime.datetime.now()
 
+    def _isIrrelevantRequest(self, RELEVANT=False, IRRELEVANT=True):
+        fac = self._failedAttemptCheck()
+        if fac is None:
+            return RELEVANT
+
+        if fac == interfaces.TML_CHECK_ALL:
+            return RELEVANT
+
+        interaction = getInteraction()
+        try:
+            request = interaction.participations[0]
+        except IndexError:
+            return RELEVANT # no request, we regard that as relevant.
+
+        if fac == interfaces.TML_CHECK_NONRESOURCE:
+            if '/@@/' in request.getURL():
+                return IRRELEVANT
+            return RELEVANT
+
+        if fac == interfaces.TML_CHECK_POSTONLY:
+            if request.method == 'POST':
+                return RELEVANT
+            return IRRELEVANT
+
     def checkPassword(self, pwd, ignoreExpiration=False, ignoreFailures=False):
         # keep this as fast as possible, because it will be called (usually)
         # for EACH request
 
         # Check the password
         same = super(PrincipalMixIn, self).checkPassword(pwd)
+
+        # Do not try to record failed attempts or raise account locked
+        # errors for requests that are irrelevant in this regard.
+        if self._isIrrelevantRequest():
+            return same
 
         if not ignoreFailures and self.lastFailedAttempt is not None:
             if self.tooManyLoginFailures():
@@ -118,7 +147,9 @@ class PrincipalMixIn(object):
             add = 0
         else:
             #failed attempt, record it, increase counter
-            add = self.checkFailedAttempt()
+            self.failedAttempts += 1
+            self.lastFailedAttempt = self.now()
+            add = 1
 
         # If the maximum amount of failures has been reached notify the
         # system by raising an error.
@@ -132,45 +163,6 @@ class PrincipalMixIn(object):
             self.lastFailedAttempt = None
 
         return same
-
-    def _getRequest(self):
-        interaction = getInteraction()
-        try:
-            return interaction.participations[0]
-        except IndexError:
-            return None
-
-    def checkFailedAttempt(self):
-        #failed attempt, record it, increase counter (in case we have to)
-        validRequest = True
-        fac = self._failedAttemptCheck()
-        if fac == interfaces.TML_CHECK_ALL:
-            validRequest = True
-        else:
-            request = self._getRequest()
-            if request is None:
-                validRequest = True
-            else:
-                if fac == interfaces.TML_CHECK_NONRESOURCE:
-                    url = request.getURL()
-                    if '/@@/' in url:
-                        #this is a resource
-                        validRequest = False
-                    else:
-                        validRequest = True
-                elif fac == interfaces.TML_CHECK_POSTONLY:
-                    if request.method == 'POST':
-                        #this is a POST request
-                        validRequest = True
-                    else:
-                        validRequest = False
-
-        if validRequest:
-            self.failedAttempts += 1
-            self.lastFailedAttempt = self.now()
-            return 1
-        else:
-            return 0
 
     def tooManyLoginFailures(self, add = 0):
         attempts = self._maxFailedAttempts()
