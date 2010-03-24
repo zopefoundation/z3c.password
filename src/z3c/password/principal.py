@@ -81,29 +81,29 @@ class PrincipalMixIn(object):
         #hook to facilitate testing and easier override
         return datetime.datetime.now()
 
-    def _isIrrelevantRequest(self, RELEVANT=False, IRRELEVANT=True):
+    def _isRelevantRequest(self):
         fac = self._failedAttemptCheck()
         if fac is None:
-            return RELEVANT
+            return True
 
         if fac == interfaces.TML_CHECK_ALL:
-            return RELEVANT
+            return True
 
         interaction = getInteraction()
         try:
             request = interaction.participations[0]
         except IndexError:
-            return RELEVANT # no request, we regard that as relevant.
+            return True # no request, we regard that as relevant.
 
         if fac == interfaces.TML_CHECK_NONRESOURCE:
             if '/@@/' in request.getURL():
-                return IRRELEVANT
-            return RELEVANT
+                return False
+            return True
 
         if fac == interfaces.TML_CHECK_POSTONLY:
             if request.method == 'POST':
-                return RELEVANT
-            return IRRELEVANT
+                return True
+            return False
 
     def checkPassword(self, pwd, ignoreExpiration=False, ignoreFailures=False):
         # keep this as fast as possible, because it will be called (usually)
@@ -114,7 +114,7 @@ class PrincipalMixIn(object):
 
         # Do not try to record failed attempts or raise account locked
         # errors for requests that are irrelevant in this regard.
-        if self._isIrrelevantRequest():
+        if not self._isRelevantRequest():
             return same
 
         if not ignoreFailures and self.lastFailedAttempt is not None:
