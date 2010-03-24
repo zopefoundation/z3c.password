@@ -196,7 +196,7 @@ Set the option on the user:
   >>> user.failedAttemptCheck = interfaces.TML_CHECK_NONRESOURCE
 
 Create our dummy request:
-Watch out! this is a request for a resource (/@@/)
+Watch out! this is a request for a resource (note the "/@@/" in the URL)
 
   >>> request = testing.TestBrowserRequest('http://localhost/@@/logo.gif')
   >>> zope.security.management.getInteraction().add(request)
@@ -273,7 +273,6 @@ But the counter is not incremented.
   0
 
 Try a POST request. What a loginform usually is.
-(Note, that the request gets examined only if the password does not match.)
 
   >>> zope.security.management.getInteraction().remove(request)
   >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
@@ -614,7 +613,6 @@ But the counter is not incremented.
   0
 
 Try a POST request. What a loginform usually is.
-(Note, that the request gets examined only if the password does not match.)
 
   >>> zope.security.management.getInteraction().remove(request)
   >>> request = testing.TestBrowserRequest('http://localhost/loginform.html',
@@ -1007,6 +1005,42 @@ Gets reset on a successful check:
   >>> user.lastFailedAttempt is None
   True
 
+After the maximum amount of failed attempts has been reached, subsequent
+login attempts will raise an error. This error should however only be raised
+for these types of requests that were relevant to the counting failed
+attempts.
+
+  >>> # Set a POST request, as only this type of request will be counted for.
+  >>> request = testing.TestBrowserRequest(
+  ...    'http://localhost/index.html', 'POST')
+  >>> zope.security.management.getInteraction().add(request)
+
+  >>> poptions.failedAttemptCheck = interfaces.TML_CHECK_POSTONLY
+  >>> poptions.maxFailedAttempts = 2
+  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user.checkPassword('wrong_once')
+  False
+  >>> user.failedAttempts
+  1
+
+  >>> user.checkPassword('wrong_twice')
+  False
+  >>> user.failedAttempts
+  2
+
+  >>> user.checkPassword('wrong_three_times')
+  Traceback (most recent call last):
+  ...
+  TooManyLoginFailures: The password was entered incorrectly too often.
+
+  >>> # Set a GET request. This should not raise any error.
+  >>> zope.security.management.getInteraction().remove(request)
+  >>> request = testing.TestBrowserRequest(
+  ...    'http://localhost/@@/logo.gif', 'GET')
+  >>> zope.security.management.getInteraction().add(request)
+
+  >>> user.checkPassword('wrong_four_times')
+  False
 
 
 ``passwordSetOn`` might happen to be None.
