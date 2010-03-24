@@ -2,8 +2,8 @@
 CHANGES
 =======
 
-0.10 (unreleased)
------------------
+0.10.0 (2010-03-24)
+-------------------
 
 - Check for relevancy of the request when counting failed login attempts as
   early as possible. This prevents account locked errors raised for things like
