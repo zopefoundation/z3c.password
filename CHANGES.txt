@@ -2,10 +2,13 @@
 CHANGES
 =======
 
-0.10.1 (unreleased)
+0.10.1 (2011-03-28)
 -------------------
 
-- Nothing changed yet.
+- Minor changes:
+  * Password field: added ignoreEmpty=False parameter
+  * previousPasswords: always set the property, not just append
+  * some caching of IPasswordOptionsUtility property usage
 
 
 0.10.0 (2010-03-24)

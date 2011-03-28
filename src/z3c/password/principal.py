@@ -67,7 +67,10 @@ class PrincipalMixIn(object):
                 self.previousPasswords = persistent.list.PersistentList()
 
             if self.password is not None:
-                self.previousPasswords.append(self.password)
+                # storm/custom property does not like a simple append
+                ppwd = self.previousPasswords
+                ppwd.append(self.password)
+                self.previousPasswords = ppwd
 
         self.passwordSetOn = self.now()
         self.failedAttempts = 0
@@ -213,8 +216,9 @@ class PrincipalMixIn(object):
         if options is None:
             return self.passwordExpiresAfter
         else:
-            if options.passwordExpiresAfter is not None:
-                return datetime.timedelta(days=options.passwordExpiresAfter)
+            days = options.passwordExpiresAfter
+            if days is not None:
+                return datetime.timedelta(days=days)
             else:
                 return self.passwordExpiresAfter
 
@@ -226,8 +230,9 @@ class PrincipalMixIn(object):
         if options is None:
             return self.lockOutPeriod
         else:
-            if options.lockOutPeriod is not None:
-                return datetime.timedelta(minutes=options.lockOutPeriod)
+            minutes = options.lockOutPeriod
+            if minutes is not None:
+                return datetime.timedelta(minutes=minutes)
             else:
                 return self.lockOutPeriod
 
@@ -239,8 +244,9 @@ class PrincipalMixIn(object):
         if options is None:
             return self.failedAttemptCheck
         else:
-            if options.failedAttemptCheck is not None:
-                return options.failedAttemptCheck
+            fac = options.failedAttemptCheck
+            if fac is not None:
+                return fac
             else:
                 return self.failedAttemptCheck
 
@@ -252,8 +258,9 @@ class PrincipalMixIn(object):
         if options is None:
             return self.maxFailedAttempts
         else:
-            if options.maxFailedAttempts is not None:
-                return options.maxFailedAttempts
+            count = options.maxFailedAttempts
+            if count is not None:
+                return count
             else:
                 return self.maxFailedAttempts
 
@@ -265,7 +272,8 @@ class PrincipalMixIn(object):
         if options is None:
             return self.disallowPasswordReuse
         else:
-            if options.disallowPasswordReuse is not None:
-                return options.disallowPasswordReuse
+            dpr = options.disallowPasswordReuse
+            if dpr is not None:
+                return dpr
             else:
                 return self.disallowPasswordReuse

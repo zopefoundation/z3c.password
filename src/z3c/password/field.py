@@ -22,8 +22,9 @@ from z3c.password import interfaces
 
 class Password(zope.schema.Password):
 
-    def __init__(self, checker=None, **kw):
+    def __init__(self, checker=None, ignoreEmpty=False, **kw):
         self._checker = checker
+        self._ignoreEmpty = ignoreEmpty
         super(Password, self).__init__(**kw)
 
     @property
@@ -36,6 +37,12 @@ class Password(zope.schema.Password):
             interfaces.IPasswordUtility, self._checker)
 
     def validate(self, value):
+        if not value and self._ignoreEmpty:
+            # leaving a password empty worked fine with formlib,
+            # but seems not to work with z3c.form, value get always validated
+            # but we would want to leave the old password in place
+            return
+
         super(Password, self).validate(value)
         old = None
         if self.context is not None:
