@@ -56,8 +56,8 @@ letters, digits, punctuation, other), and the maximum similarity score.
   12
   >>> pwd.groupMax
   6
-  >>> pwd.maxSimilarity
-  0.59999999999999998
+  >>> print(pwd.maxSimilarity)
+  0.6
 
 - When the password is empty, then the password is invalid:
 
