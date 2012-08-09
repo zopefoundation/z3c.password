@@ -1,0 +1,5 @@
+include MANIFEST.in
+include *.txt
+include bootstrap.py
+include buildout.cfg
+recursive-include src *.txt *.zcml *.pot *.po *.mo
