@@ -12,6 +12,7 @@ CHANGES
 -------------------
 
 - Minor changes:
+
   * Password field: added ignoreEmpty=False parameter
   * previousPasswords: always set the property, not just append
   * some caching of IPasswordOptionsUtility property usage
@@ -32,7 +33,8 @@ CHANGES
 0.8.0 (2009-01-29)
 ------------------
 
-- Feature: ``failedAttemptCheck``
+- Feature: ``failedAttemptCheck``:
+
   * increment failedAttempts on all/any request (this is the default)
   * increment failedAttempts only on non-resource requests
   * increment failedAttempts only on POST requests
@@ -67,6 +69,7 @@ CHANGES
 ------------------
 
 - Feature: Even harder password settings:
+
   * ``minLowerLetter``
   * ``minUpperLetter``
   * ``minDigits``
@@ -76,6 +79,7 @@ CHANGES
   * ``minUniqueLetters``: count and do not allow less then specified number
 
 - Feature:
+
   * ``disallowPasswordReuse``: do not allow to set a previously used password
 
 - 100% test coverage
@@ -84,22 +88,27 @@ CHANGES
 ------------------
 
 - Features:
+
   ``PrincipalMixIn`` got some new properties:
+
   * ``passwordExpired``: to force the expiry of the password
   * ``lockOutPeriod``: to enable automatic lock and unlock on too many bad tries
 
   ``IPasswordOptionsUtility`` to have global password options:
-  * ``changePasswordOnNextLogin``: not implemented here,
-                                   use PrincipalMixIn.passwordExpired
+
+  * ``changePasswordOnNextLogin``: not implemented here, use
+    PrincipalMixIn.passwordExpired
   * ``lockOutPeriod``: global counterpart of the PrincipalMixIn property
   * ``passwordExpiresAfter``: global counterpart of the PrincipalMixIn property
   * ``maxFailedAttempts``: global counterpart of the PrincipalMixIn property
 
   Password checking goes like this (on the high level):
+
   1. raise AccountLocked if too many bad tries and account should be locked
   2. raise PasswordExpired if expired AND password matches
   3. raise TooManyLoginFailures if too many bad tries
   4. return whether password matches
+
   More details in ``principal.txt``
 
 - Added Russian translation
@@ -108,6 +117,7 @@ CHANGES
   override and testing
 
 - Changed the order the password is checked:
+
   1. check password against stored
   2. check maxFailedAttempts, raise TooManyLoginFailures if over
   3. if password is OK, check expirationDate, raise PasswordExpired if over
