@@ -2,10 +2,14 @@
 CHANGES
 =======
 
-0.10.2 (unreleased)
+0.11.0 (unreleased)
 -------------------
 
-- Nothing changed yet.
+- Better error messages for invalid password exceptions (when you reject the
+  user's password for being too short or too long, it's only polite to tell
+  them what the minimum/maximum password length is).
+
+  This introduces new translatable strings which haven't been translated yet.
 
 
 0.10.1 (2011-03-28)

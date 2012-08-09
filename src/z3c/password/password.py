@@ -97,9 +97,10 @@ class HighSecurityPasswordUtility(object):
         self.minUniqueLetters = minUniqueLetters
 
     def _checkSimilarity(self, new, ref):
-        sm = difflib.SequenceMatcher(None, new, ref)
-        if sm.ratio() > self.maxSimilarity:
-            raise interfaces.TooSimilarPassword()
+        similarity = difflib.SequenceMatcher(None, new, ref).ratio()
+        if similarity > self.maxSimilarity:
+            raise interfaces.TooSimilarPassword(
+                similarity=similarity, maxSimilarity=self.maxSimilarity)
 
     def verify(self, new, ref=None):
         '''See interfaces.IHighSecurityPasswordUtility'''
@@ -108,9 +109,9 @@ class HighSecurityPasswordUtility(object):
             raise interfaces.NoPassword()
         # 1. Make sure the password has the right length.
         if len(new) < self.minLength:
-            raise interfaces.TooShortPassword()
+            raise interfaces.TooShortPassword(minLength=self.minLength)
         if len(new) > self.maxLength:
-            raise interfaces.TooLongPassword()
+            raise interfaces.TooLongPassword(maxLength=self.maxLength)
         # 2. Ensure that the password is sufficiently different to the old
         #    one.
         if ref is not None:
@@ -142,35 +143,43 @@ class HighSecurityPasswordUtility(object):
             num_digits > self.groupMax or
             num_specials > self.groupMax or
             num_others > self.groupMax):
-            raise interfaces.TooManyGroupCharacters()
+            raise interfaces.TooManyGroupCharacters(
+                groupMax=self.groupMax)
 
         if (self.minLowerLetter is not None
             and num_lower_letters < self.minLowerLetter):
-            raise interfaces.TooFewGroupCharactersLowerLetter()
+            raise interfaces.TooFewGroupCharactersLowerLetter(
+                        minLowerLetter=self.minLowerLetter)
 
         if (self.minUpperLetter is not None
             and num_upper_letters < self.minUpperLetter):
-            raise interfaces.TooFewGroupCharactersUpperLetter()
+            raise interfaces.TooFewGroupCharactersUpperLetter(
+                        minUpperLetter=self.minUpperLetter)
 
         if (self.minDigits is not None
             and num_digits < self.minDigits):
-            raise interfaces.TooFewGroupCharactersDigits()
+            raise interfaces.TooFewGroupCharactersDigits(
+                        minDigits=self.minDigits)
 
         if (self.minSpecials is not None
             and num_specials < self.minSpecials):
-            raise interfaces.TooFewGroupCharactersSpecials()
+            raise interfaces.TooFewGroupCharactersSpecials(
+                        minSpecials=self.minSpecials)
 
         if (self.minOthers is not None
             and num_others < self.minOthers):
-            raise interfaces.TooFewGroupCharactersOthers()
+            raise interfaces.TooFewGroupCharactersOthers(
+                        minOthers=self.minOthers)
 
         if (self.minUniqueCharacters is not None
             and len(uniqueChars) < self.minUniqueCharacters):
-            raise interfaces.TooFewUniqueCharacters()
+            raise interfaces.TooFewUniqueCharacters(
+                        minUniqueCharacters=self.minUniqueCharacters)
 
         if (self.minUniqueLetters is not None
             and len(uniqueLetters) < self.minUniqueLetters):
-            raise interfaces.TooFewUniqueLetters()
+            raise interfaces.TooFewUniqueLetters(
+                        minUniqueLetters=self.minUniqueLetters)
 
         return
 

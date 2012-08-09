@@ -81,12 +81,12 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify('foo')
   Traceback (most recent call last):
   ...
-  TooShortPassword
+  TooShortPassword: Password is too short (minimum length: 8).
 
   >>> pwd.verify('foobar-foobar')
   Traceback (most recent call last):
   ...
-  TooLongPassword
+  TooLongPassword: Password is too long (maximum length: 12).
 
   >>> pwd.verify('fooBar12')
 
@@ -100,7 +100,7 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify('fooBar12', 'foobar12')
   Traceback (most recent call last):
   ...
-  TooSimilarPassword
+  TooSimilarPassword: Password is too similar to old one (similarity 88%, should be at most 60%).
 
 - The final check ensures that the password does not have too many characters
   of one group. The groups are: lower letters, upper letters, digits,
@@ -109,27 +109,27 @@ letters, digits, punctuation, other), and the maximum similarity score.
   >>> pwd.verify('fooBarBlah')
   Traceback (most recent call last):
   ...
-  TooManyGroupCharacters
+  TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
   >>> pwd.verify('FOOBARBlah')
   Traceback (most recent call last):
   ...
-  TooManyGroupCharacters
+  TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
   >>> pwd.verify('12345678')
   Traceback (most recent call last):
   ...
-  TooManyGroupCharacters
+  TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
   >>> pwd.verify('........')
   Traceback (most recent call last):
   ...
-  TooManyGroupCharacters
+  TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
   >>> pwd.verify(unichr(0x0e1)*8)
   Traceback (most recent call last):
   ...
-  TooManyGroupCharacters
+  TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
 Let's now verify a list of password that were provided by a bank:
 
@@ -167,12 +167,12 @@ We want to have at least 5 lowercase letters in the password:
   >>> pwd.verify('FOOBAR123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersLowerLetter
+  TooFewGroupCharactersLowerLetter: Password does not contain enough characters of lowercase letters (should have at least 5).
 
   >>> pwd.verify('foobAR123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersLowerLetter
+  TooFewGroupCharactersLowerLetter: Password does not contain enough characters of lowercase letters (should have at least 5).
 
   >>> pwd.verify('foobaR123')
 
@@ -191,12 +191,12 @@ We want to have at least 5 uppercase letters in the password:
   >>> pwd.verify('foobar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersUpperLetter
+  TooFewGroupCharactersUpperLetter: Password does not contain enough characters of uppercase letters (should have at least 5).
 
   >>> pwd.verify('FOOBar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersUpperLetter
+  TooFewGroupCharactersUpperLetter: Password does not contain enough characters of uppercase letters (should have at least 5).
 
   >>> pwd.verify('fOOBAR123')
 
@@ -215,12 +215,12 @@ We want to have at least 5 digits in the password:
   >>> pwd.verify('foobar123')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersDigits
+  TooFewGroupCharactersDigits: Password does not contain enough characters of digits (should have at least 5).
 
   >>> pwd.verify('FOOBa1234')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersDigits
+  TooFewGroupCharactersDigits: Password does not contain enough characters of digits (should have at least 5).
 
   >>> pwd.verify('fOBA12345')
 
@@ -239,12 +239,12 @@ We want to have at least 5 specials in the password:
   >>> pwd.verify('foo(bar)')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersSpecials
+  TooFewGroupCharactersSpecials: Password does not contain enough characters of special characters (should have at least 5).
 
   >>> pwd.verify('FO.#(Ba1)')
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersSpecials
+  TooFewGroupCharactersSpecials: Password does not contain enough characters of special characters (should have at least 5).
 
   >>> pwd.verify('fO.,;()5')
 
@@ -262,12 +262,12 @@ We want to have at least 5 others in the password:
   >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4))
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersOthers
+  TooFewGroupCharactersOthers: Password does not contain enough characters of other characters (should have at least 5).
 
   >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4)+unichr(0x0e1))
   Traceback (most recent call last):
   ...
-  TooFewGroupCharactersOthers
+  TooFewGroupCharactersOthers: Password does not contain enough characters of other characters (should have at least 5).
 
   >>> pwd.verify('fOO'+unichr(0x0e1)*5)
 
@@ -288,12 +288,12 @@ We want to have at least 5 different characters in the password:
   >>> pwd.verify('foofoo1212')
   Traceback (most recent call last):
   ...
-  TooFewUniqueCharacters
+  TooFewUniqueCharacters: Password does not contain enough unique characters (should have at least 5).
 
   >>> pwd.verify('FOOfoo2323')
   Traceback (most recent call last):
   ...
-  TooFewUniqueCharacters
+  TooFewUniqueCharacters: Password does not contain enough unique characters (should have at least 5).
 
   >>> pwd.verify('fOOBAR123')
 
@@ -312,12 +312,12 @@ We want to have at least 5 different letters in the password:
   >>> pwd.verify('foofoo1212')
   Traceback (most recent call last):
   ...
-  TooFewUniqueLetters
+  TooFewUniqueLetters: Password does not contain enough unique letters (should have at least 5).
 
   >>> pwd.verify('FOOBfoob2323')
   Traceback (most recent call last):
   ...
-  TooFewUniqueLetters
+  TooFewUniqueLetters: Password does not contain enough unique letters (should have at least 5).
 
   >>> pwd.verify('fOOBAR123')
 
@@ -356,7 +356,7 @@ Let's validate a value:
   >>> pwdField.validate(u'fooBar')
   Traceback (most recent call last):
   ...
-  TooShortPassword
+  TooShortPassword: Password is too short (minimum length: 8).
 
 Validation must work on bound fields too:
 
@@ -379,7 +379,7 @@ Bind the field:
   >>> bound.validate(u'fooBar')
   Traceback (most recent call last):
   ...
-  TooShortPassword
+  TooShortPassword: Password is too short (minimum length: 8).
 
 Let's create a principal without the PrincipalMixIn:
 
@@ -394,7 +394,7 @@ Bind the field:
   >>> bound.validate(u'fooBar')
   Traceback (most recent call last):
   ...
-  TooShortPassword
+  TooShortPassword: Password is too short (minimum length: 8).
 
 
 Other common usecase is to do a utility and specify it's name as checker.
@@ -415,7 +415,7 @@ Let's validate a value:
   >>> pwdField.validate(u'fooBar')
   Traceback (most recent call last):
   ...
-  TooShortPassword
+  TooShortPassword: Password is too short (minimum length: 8).
 
 
 Edge cases.

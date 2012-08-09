@@ -23,7 +23,7 @@ def read(*rnames):
 
 setup (
     name='z3c.password',
-    version='0.10.2dev',
+    version='0.11.0dev',
     author = "Stephan Richter, Roger Ineichen and the Zope Community",
     author_email = "zope3-dev@zope.org",
     description = "Password generation and verification utility for Zope3",
@@ -62,6 +62,7 @@ setup (
         'zope.component',
         'zope.exceptions',
         'zope.i18nmessageid',
+        'zope.i18n',
         'zope.interface',
         'zope.schema',
         'zope.security',

@@ -18,11 +18,25 @@ $Id$
 __docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
+from zope.i18n import translate
 
 from z3c.password import MessageFactory as _
 
 class InvalidPassword(zope.schema.ValidationError):
     """Invalid Password"""
+
+    i18n_message = None
+
+    def __str__(self):
+        if self.i18n_message:
+            return translate(self.i18n_message)
+        return super(InvalidPassword, self).__str__()
+
+    def doc(self):
+        if self.i18n_message:
+            return self.i18n_message
+        return self.__class__.__doc__
+
 
 class NoPassword(InvalidPassword):
     __doc__ = _('''No new password specified.''')
@@ -30,14 +44,50 @@ class NoPassword(InvalidPassword):
 class TooShortPassword(InvalidPassword):
     __doc__ = _('''Password is too short.''')
 
+    def __init__(self, minLength=None):
+        super(TooShortPassword, self).__init__()
+        self.minLength = minLength
+        if minLength is not None:
+            self.i18n_message = _(
+                'Password is too short (minimum length: ${minLength}).',
+                mapping=dict(minLength=minLength))
+
 class TooLongPassword(InvalidPassword):
     __doc__ = _('''Password is too long.''')
+
+    def __init__(self, maxLength=None):
+        super(TooLongPassword, self).__init__()
+        self.maxLength = maxLength
+        if maxLength is not None:
+            self.i18n_message = _(
+                'Password is too long (maximum length: ${maxLength}).',
+                mapping=dict(maxLength=maxLength))
 
 class TooSimilarPassword(InvalidPassword):
     __doc__ = _('''Password is too similar to old one.''')
 
+    def __init__(self, similarity=None, maxSimilarity=None):
+        super(TooSimilarPassword, self).__init__()
+        self.similarity = similarity
+        self.maxSimilarity = maxSimilarity
+        if similarity is not None and maxSimilarity is not None:
+            self.i18n_message = _(
+                'Password is too similar to old one'
+                ' (similarity ${similarity}%, should be at most ${maxSimilarity}%).',
+                mapping=dict(similarity=int(round(similarity * 100)),
+                             maxSimilarity=int(round(maxSimilarity * 100))))
+
 class TooManyGroupCharacters(InvalidPassword):
     __doc__ = _('''Password contains too many characters of one group.''')
+
+    def __init__(self, groupMax=None):
+        super(TooManyGroupCharacters, self).__init__()
+        self.groupMax = groupMax
+        if groupMax is not None:
+            self.i18n_message = _(
+                'Password contains too many characters of one group'
+                ' (should have at most ${groupMax}).',
+                mapping=dict(groupMax=groupMax))
 
 class TooFewGroupCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough characters of one group.''')
@@ -46,26 +96,89 @@ class TooFewGroupCharactersLowerLetter(TooFewGroupCharacters):
     __doc__ = _(
         '''Password does not contain enough characters of lowercase letters.''')
 
+    def __init__(self, minLowerLetter=None):
+        super(TooFewGroupCharactersLowerLetter, self).__init__()
+        self.minLowerLetter = minLowerLetter
+        if minLowerLetter is not None:
+            self.i18n_message = _(
+                'Password does not contain enough characters of lowercase letters'
+                ' (should have at least ${minLowerLetter}).',
+                mapping=dict(minLowerLetter=minLowerLetter))
+
 class TooFewGroupCharactersUpperLetter(TooFewGroupCharacters):
     __doc__ = _(
         '''Password does not contain enough characters of uppercase letters.''')
 
+    def __init__(self, minUpperLetter=None):
+        super(TooFewGroupCharactersUpperLetter, self).__init__()
+        self.minUpperLetter = minUpperLetter
+        if minUpperLetter is not None:
+            self.i18n_message = _(
+                'Password does not contain enough characters of uppercase letters'
+                ' (should have at least ${minUpperLetter}).',
+                mapping=dict(minUpperLetter=minUpperLetter))
+
 class TooFewGroupCharactersDigits(TooFewGroupCharacters):
     __doc__ = _('''Password does not contain enough characters of digits.''')
+
+    def __init__(self, minDigits=None):
+        super(TooFewGroupCharactersDigits, self).__init__()
+        self.minDigits = minDigits
+        if minDigits is not None:
+            self.i18n_message = _(
+                'Password does not contain enough characters of digits'
+                ' (should have at least ${minDigits}).',
+                mapping=dict(minDigits=minDigits))
 
 class TooFewGroupCharactersSpecials(TooFewGroupCharacters):
     __doc__ = _(
         '''Password does not contain enough characters of special characters.''')
 
+    def __init__(self, minSpecials=None):
+        super(TooFewGroupCharactersSpecials, self).__init__()
+        self.minSpecials = minSpecials
+        if minSpecials is not None:
+            self.i18n_message = _(
+                'Password does not contain enough characters of special characters'
+                ' (should have at least ${minSpecials}).',
+                mapping=dict(minSpecials=minSpecials))
+
 class TooFewGroupCharactersOthers(TooFewGroupCharacters):
     __doc__ = _(
         '''Password does not contain enough characters of other characters.''')
 
+    def __init__(self, minOthers=None):
+        super(TooFewGroupCharactersOthers, self).__init__()
+        self.minOthers = minOthers
+        if minOthers is not None:
+            self.i18n_message = _(
+                'Password does not contain enough characters of other characters'
+                ' (should have at least ${minOthers}).',
+                mapping=dict(minOthers=minOthers))
+
 class TooFewUniqueCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough unique characters.''')
 
+    def __init__(self, minUniqueCharacters=None):
+        super(TooFewUniqueCharacters, self).__init__()
+        self.minUniqueCharacters = minUniqueCharacters
+        if minUniqueCharacters is not None:
+            self.i18n_message = _(
+                'Password does not contain enough unique characters'
+                ' (should have at least ${minUniqueCharacters}).',
+                mapping=dict(minUniqueCharacters=minUniqueCharacters))
+
 class TooFewUniqueLetters(InvalidPassword):
     __doc__ = _('''Password does not contain enough unique letters.''')
+
+    def __init__(self, minUniqueLetters=None):
+        super(TooFewUniqueLetters, self).__init__()
+        self.minUniqueLetters = minUniqueLetters
+        if minUniqueLetters is not None:
+            self.i18n_message = _(
+                'Password does not contain enough unique letters'
+                ' (should have at least ${minUniqueLetters}).',
+                mapping=dict(minUniqueLetters=minUniqueLetters))
 
 class PasswordExpired(Exception):
     __doc__ = _('''The password has expired.''')
