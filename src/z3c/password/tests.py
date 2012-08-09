@@ -19,7 +19,7 @@ __docformat__ = "reStructuredText"
 
 import doctest
 import unittest
-from zope.testing.doctestunit import DocFileSuite
+from doctest import DocFileSuite
 
 from z3c.password import testing
 
