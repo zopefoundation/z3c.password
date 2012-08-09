@@ -18,7 +18,6 @@ $Id$
 __docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
-from zope.exceptions.interfaces import UserError
 
 from z3c.password import MessageFactory as _
 
