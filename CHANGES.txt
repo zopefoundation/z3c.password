@@ -2,7 +2,7 @@
 CHANGES
 =======
 
-0.11.1 (unreleased)
+0.11.1 (2012-09-19)
 -------------------
 
 - ``TooSimilarPassword``: do not round ``maxSimilarity`` up, because we
