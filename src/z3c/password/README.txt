@@ -102,6 +102,14 @@ letters, digits, punctuation, other), and the maximum similarity score.
   ...
   TooSimilarPassword: Password is too similar to old one (similarity 88%, should be at most 60%).
 
+  >>> pwd2 = password.HighSecurityPasswordUtility()
+  >>> pwd2.maxSimilarity = 0.999
+
+  >>> pwd2.verify('fooBar12', 'fooBar12')
+  Traceback (most recent call last):
+  ...
+  TooSimilarPassword: Password is too similar to old one (similarity 100%, should be at most 99%).
+
 - The final check ensures that the password does not have too many characters
   of one group. The groups are: lower letters, upper letters, digits,
   punctuation, and others.

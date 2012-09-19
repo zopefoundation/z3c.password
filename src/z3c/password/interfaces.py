@@ -75,7 +75,7 @@ class TooSimilarPassword(InvalidPassword):
                 'Password is too similar to old one'
                 ' (similarity ${similarity}%, should be at most ${maxSimilarity}%).',
                 mapping=dict(similarity=int(round(similarity * 100)),
-                             maxSimilarity=int(round(maxSimilarity * 100))))
+                             maxSimilarity=int(maxSimilarity * 100)))
 
 class TooManyGroupCharacters(InvalidPassword):
     __doc__ = _('''Password contains too many characters of one group.''')
