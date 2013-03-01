@@ -12,13 +12,11 @@
 #
 ##############################################################################
 """Password Field Implementation
-
-$Id$
 """
-__docformat__ = "reStructuredText"
 import zope.component
 import zope.schema
 from z3c.password import interfaces
+from z3c.password._compat import string_types
 
 class Password(zope.schema.Password):
 
@@ -31,7 +29,7 @@ class Password(zope.schema.Password):
     def checker(self):
         if self._checker is None:
             return None
-        if not isinstance(self._checker, basestring):
+        if not isinstance(self._checker, string_types):
             return self._checker
         return zope.component.getUtility(
             interfaces.IPasswordUtility, self._checker)

@@ -12,10 +12,7 @@
 #
 ##############################################################################
 """Principal MixIn for Advanced Password Management
-
-$Id$
 """
-__docformat__ = "reStructuredText"
 import datetime
 import persistent.list
 import zope.component

@@ -12,24 +12,25 @@
 #
 ##############################################################################
 """Test Setup
-
-$Id$
 """
-__docformat__ = "reStructuredText"
-
 import zope.component
-from zope.app.authentication import password
-from zope.app.testing import placelesssetup
-
+import zope.component.testing
+from zope.password import password
 
 def setUp(test):
-    placelesssetup.setUp(test)
+    zope.component.testing.setUp(test)
+
+    from zope.security.management import newInteraction
+    newInteraction()
+
+    zope.component.provideUtility(
+        password.PlainTextPasswordManager(), name='SSHA')
     zope.component.provideUtility(
         password.PlainTextPasswordManager(), name='Plain Text')
 
 
 def tearDown(test):
-    placelesssetup.tearDown(test)
+    zope.component.testing.tearDown(test)
 
 
 class TestBrowserRequest():

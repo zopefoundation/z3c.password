@@ -12,10 +12,7 @@
 #
 ##############################################################################
 """Password Utility Interfaces
-
-$Id$
 """
-__docformat__ = "reStructuredText"
 import zope.interface
 import zope.schema
 from zope.i18n import translate

@@ -12,10 +12,7 @@
 #
 ##############################################################################
 """Password Utility Implementation
-
-$Id$
 """
-__docformat__ = "reStructuredText"
 import difflib
 import random
 import string
@@ -26,9 +23,9 @@ from zope.schema.fieldproperty import FieldProperty
 from z3c.password import interfaces
 
 
+@zope.interface.implementer(interfaces.IPasswordUtility)
 class TrivialPasswordUtility(object):
     """A trivial password utility."""
-    zope.interface.implements(interfaces.IPasswordUtility)
 
     description = (u'All passwords are accepted and always the "trivial" '
                    u'password is generated.')
@@ -42,9 +39,9 @@ class TrivialPasswordUtility(object):
         return 'trivial'
 
 
+@zope.interface.implementer(interfaces.IHighSecurityPasswordUtility)
 class HighSecurityPasswordUtility(object):
     """An implementation of the high-security password API."""
-    zope.interface.implements(interfaces.IHighSecurityPasswordUtility)
 
     minLength = FieldProperty(
         interfaces.IHighSecurityPasswordUtility['minLength'])
@@ -69,8 +66,8 @@ class HighSecurityPasswordUtility(object):
     minUniqueLetters = FieldProperty(
         interfaces.IHighSecurityPasswordUtility['minUniqueLetters'])
 
-    LOWERLETTERS = string.letters[:26]
-    UPPERLETTERS = string.letters[26:]
+    LOWERLETTERS = string.ascii_letters[:26]
+    UPPERLETTERS = string.ascii_letters[26:]
     DIGITS = string.digits
     SPECIALS = string.punctuation
 
@@ -195,7 +192,7 @@ class HighSecurityPasswordUtility(object):
             chars = self.LOWERLETTERS + self.UPPERLETTERS + \
                     self.DIGITS + self.SPECIALS
 
-            for count in xrange(length):
+            for count in range(length):
                 new += self.random.choice(chars)
 
             # Verify the new password
@@ -207,9 +204,9 @@ class HighSecurityPasswordUtility(object):
                 verified = True
         return new
 
+@zope.interface.implementer(interfaces.IPasswordOptionsUtility)
 class PasswordOptionsUtility(object):
     """An implementation of the security options."""
-    zope.interface.implements(interfaces.IPasswordOptionsUtility)
 
     changePasswordOnNextLogin = FieldProperty(
         interfaces.IPasswordOptionsUtility['changePasswordOnNextLogin'])

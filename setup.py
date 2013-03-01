@@ -12,8 +12,6 @@
 #
 ##############################################################################
 """Setup
-
-$Id:$
 """
 import os
 from setuptools import setup, find_packages
@@ -23,7 +21,7 @@ def read(*rnames):
 
 setup (
     name='z3c.password',
-    version='0.11.2.dev0',
+    version='1.0.0a1.dev0',
     author = "Stephan Richter, Roger Ineichen and the Zope Community",
     author_email = "zope3-dev@zope.org",
     description = "Password generation and verification utility for Zope3",
@@ -35,13 +33,17 @@ setup (
     license = "ZPL 2.1",
     keywords = "zope3 z3c password verification",
     classifiers = [
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: Implementation :: CPython',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP',
@@ -54,8 +56,8 @@ setup (
     extras_require = dict(
         test = [
             'z3c.coverage',
-            'zope.app.authentication',
-            'zope.app.testing',
+            'zope.password',
+            'zope.pluggableauth',
             'zope.testing',
             ],
         ),
@@ -69,5 +71,11 @@ setup (
         'zope.schema',
         'zope.security',
         ],
+    tests_require = [
+        'zope.password',
+        'zope.pluggableauth',
+        'zope.testing',
+        ],
+    test_suite='z3c.password.tests.test_suite',
     zip_safe = False,
 )

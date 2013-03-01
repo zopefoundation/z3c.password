@@ -41,7 +41,7 @@ The ``generate()`` method also accepts the optional reference
 password. Finally, each password utility must provide a description explaining
 its security constraints:
 
-  >>> print pwd.description
+  >>> print(pwd.description)
   All passwords are accepted and always the "trivial" password is generated.
 
 Let's now look at the high-security password utility. In its constructor you
@@ -134,6 +134,7 @@ letters, digits, punctuation, other), and the maximum similarity score.
   ...
   TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
+  >>> from z3c.password._compat import unichr
   >>> pwd.verify(unichr(0x0e1)*8)
   Traceback (most recent call last):
   ...
@@ -150,14 +151,13 @@ when initializing the utility:
 
   >>> pwd = password.HighSecurityPasswordUtility(seed=8)
 
-  >>> pwd.generate()
-  '{l%ix~t8R'
-  >>> pwd.generate()
-  'Us;iwbzM[J'
+  >>> res = pwd.generate()
+  >>> res in ['{l%ix~t8R', 'VWqy{fkrF'] # Py 2/3 diff in random.
+  True
 
 Force a LOT to make coverage happy:
 
-  >>> for x in xrange(256):
+  >>> for x in range(256):
   ...     _ =pwd.generate()
 
 
@@ -184,12 +184,9 @@ We want to have at least 5 lowercase letters in the password:
 
   >>> pwd.verify('foobaR123')
 
-  >>> pwd.generate()
-  'Us;iwbzM[J'
-
-  >>> pwd.generate()
-  'soXVg[V$uw'
-
+  >>> res = pwd.generate()
+  >>> res in ['Us;iwbzM[J', 'VWqy{fkrF']
+  True
 
 We want to have at least 5 uppercase letters in the password:
 
@@ -208,12 +205,9 @@ We want to have at least 5 uppercase letters in the password:
 
   >>> pwd.verify('fOOBAR123')
 
-  >>> pwd.generate()
-  'OvMPN3Bi'
-
-  >>> pwd.generate()
-  'l:zB.VA@MH'
-
+  >>> res = pwd.generate()
+  >>> res in ['OvMPN3Bi', '[j#`(CSFbLRC']
+  True
 
 We want to have at least 5 digits in the password:
 
@@ -232,12 +226,9 @@ We want to have at least 5 digits in the password:
 
   >>> pwd.verify('fOBA12345')
 
-  >>> pwd.generate()
-  '(526vK(>Z42v'
-
-  >>> pwd.generate()
-  '3Z&Mtq35Y840'
-
+  >>> res = pwd.generate()
+  >>> res in ['(526vK(>Z42v', 'Rv+3Dr0+501']
+  True
 
 We want to have at least 5 specials in the password:
 
@@ -256,11 +247,9 @@ We want to have at least 5 specials in the password:
 
   >>> pwd.verify('fO.,;()5')
 
-  >>> pwd.generate()
-  '?d{*~2q|P'
-
-  >>> pwd.generate()
-  '(8a5\\(^}vB'
+  >>> res = pwd.generate()
+  >>> res in ['?d{*~2q|P', 's:i(e!`ys-6~']
+  True
 
 We want to have at least 5 others in the password:
 
@@ -305,12 +294,9 @@ We want to have at least 5 different characters in the password:
 
   >>> pwd.verify('fOOBAR123')
 
-  >>> pwd.generate()
-  '{l%ix~t8R'
-
-  >>> pwd.generate()
-  'Us;iwbzM[J'
-
+  >>> res = pwd.generate()
+  >>> res in ['{l%ix~t8R', 'VWqy{fkrF']
+  True
 
 We want to have at least 5 different letters in the password:
 
@@ -329,11 +315,9 @@ We want to have at least 5 different letters in the password:
 
   >>> pwd.verify('fOOBAR123')
 
-  >>> pwd.generate()
-  '{l%ix~t8R'
-
-  >>> pwd.generate()
-  'Us;iwbzM[J'
+  >>> res = pwd.generate()
+  >>> res in ['{l%ix~t8R', 'VWqy{fkrF']
+  True
 
 
 The Password Field
@@ -348,7 +332,7 @@ not.
 Let's now create the field:
 
   >>> import datetime
-  >>> from zope.app.authentication.password import PlainTextPasswordManager
+  >>> from zope.password.password import PlainTextPasswordManager
   >>> from z3c.password import field
 
   >>> pwd = password.HighSecurityPasswordUtility(seed=8)
@@ -370,7 +354,7 @@ Validation must work on bound fields too:
 
 Let's now create a principal:
 
-  >>> from zope.app.authentication import principalfolder
+  >>> from zope.pluggableauth.plugins import principalfolder
   >>> from z3c.password import principal
 
   >>> class MyPrincipal(principal.PrincipalMixIn,

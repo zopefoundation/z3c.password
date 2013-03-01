@@ -103,7 +103,7 @@ and it's not None then the principal's property takes priority.
 
 Let's now create a principal:
 
-  >>> from zope.app.authentication import principalfolder
+  >>> from zope.pluggableauth.plugins import principalfolder
   >>> from z3c.password import interfaces
   >>> from z3c.password import principal
 
@@ -975,12 +975,10 @@ forever.
 
   >>> NOW = datetime.datetime(2009, 6, 14, 13, 0)
 
-  >>> for x in xrange(256):
+  >>> for x in range(256):
   ...     NOW = datetime.datetime(2009, 6, 14, 13)+datetime.timedelta(minutes=x)
   ...     if user.checkPassword('456456'):
-  ...         print 'bug'
-
-
+  ...         print('bug')
 
 ``failedAttempts`` needs to be reset on a successful check:
 
