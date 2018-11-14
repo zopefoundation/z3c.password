@@ -26,9 +26,9 @@ setup (
     author_email = "zope3-dev@zope.org",
     description = "Password generation and verification utility for Zope3",
     long_description=(
-        read('README.txt')
+        read('README.rst')
         + '\n\n' +
-        read('CHANGES.txt')
+        read('CHANGES.rst')
         ),
     license = "ZPL 2.1",
     keywords = "zope3 z3c password verification",
@@ -49,7 +49,7 @@ setup (
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP',
         'Framework :: Zope :: 3'],
-    url = 'http://cheeseshop.python.org/pypi/z3c.password',
+    url = 'http://pypi.org/project/z3c.password',
     packages = find_packages('src'),
     include_package_data = True,
     package_dir = {'':'src'},
