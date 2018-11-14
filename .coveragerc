@@ -1,0 +1,3 @@
+[run]
+source = z3c.password
+omit = */test*

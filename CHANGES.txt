@@ -2,11 +2,14 @@
 CHANGES
 =======
 
-1.0.0a2 (unreleased)
---------------------
+1.0.0 (unreleased)
+------------------
 
-- Nothing changed yet.
+- Add support for Python 3.6 and 3.7. Drop support for Python 3.5 and
+  below. Drop Python 2.6 support.
 
+- Drop support for ``None`` passwords, since they are not supported in the
+  underlying APIs anymore.
 
 1.0.0a1 (2013-02-28)
 --------------------
