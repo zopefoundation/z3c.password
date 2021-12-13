@@ -1,6 +1,10 @@
+============
+z3c.password
+============
 
-.. image:: https://travis-ci.com/zopefoundation/z3c.password.png?branch=master
-   :target: https://travis-ci.com/zopefoundation/z3c.password
+
+.. image:: https://github.com/zopefoundation/z3c.password/actions/workflows/tests.yml/badge.svg
+   :target: https://github.com/zopefoundation/z3c.password/actions/workflows/tests.yml
 
 .. image:: https://coveralls.io/repos/github/zopefoundation/z3c.password/badge.svg?branch=master
    :target: https://coveralls.io/github/zopefoundation/z3c.password?branch=master
