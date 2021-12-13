@@ -16,23 +16,25 @@
 import os
 from setuptools import setup, find_packages
 
+
 def read(*rnames):
     return open(os.path.join(os.path.dirname(__file__), *rnames)).read()
 
-setup (
+
+setup(
     name='z3c.password',
-    version='1.0.1.dev0',
-    author = "Stephan Richter, Roger Ineichen and the Zope Community",
-    author_email = "zope3-dev@zope.org",
-    description = "Password generation and verification utility for Zope3",
+    version='1.1.0.dev0',
+    author="Stephan Richter, Roger Ineichen and the Zope Community",
+    author_email="zope3-dev@zope.org",
+    description="Password generation and verification utility for Zope3",
     long_description=(
         read('README.rst')
         + '\n\n' +
         read('CHANGES.rst')
-        ),
-    license = "ZPL 2.1",
-    keywords = "zope3 z3c password verification",
-    classifiers = [
+    ),
+    license="ZPL 2.1",
+    keywords="zope3 z3c password verification",
+    classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
@@ -41,28 +43,32 @@ setup (
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: Implementation :: CPython',
         "Programming Language :: Python :: Implementation :: PyPy",
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP',
         'Framework :: Zope :: 3'],
-    url = 'http://pypi.org/project/z3c.password',
-    packages = find_packages('src'),
-    include_package_data = True,
-    package_dir = {'':'src'},
-    namespace_packages = ['z3c'],
-    extras_require = dict(
-        test = [
+    url='http://pypi.org/project/z3c.password',
+    packages=find_packages('src'),
+    include_package_data=True,
+    package_dir={'': 'src'},
+    namespace_packages=['z3c'],
+    extras_require=dict(
+        test=[
             'z3c.coverage',
             'zope.password',
             'zope.pluggableauth',
             'zope.testing',
-            ],
-        ),
-    install_requires = [
+        ],
+    ),
+    install_requires=[
         'setuptools',
         'zope.component',
         'zope.exceptions',
@@ -71,12 +77,12 @@ setup (
         'zope.interface',
         'zope.schema',
         'zope.security',
-        ],
-    tests_require = [
+    ],
+    tests_require=[
         'zope.password',
         'zope.pluggableauth',
         'zope.testing',
-        ],
+    ],
     test_suite='z3c.password.tests.test_suite',
-    zip_safe = False,
+    zip_safe=False,
 )

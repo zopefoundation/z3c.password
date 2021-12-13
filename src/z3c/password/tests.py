@@ -32,13 +32,13 @@ checker = renormalizing.RENormalizing([
      r"NoPassword"),
     (re.compile("zope.security.interfaces.NoInteraction"),
      r"NoInteraction"),
-    ])
+])
 
 
 def test_suite():
-    flags = doctest.NORMALIZE_WHITESPACE|\
-            doctest.ELLIPSIS|\
-            doctest.IGNORE_EXCEPTION_DETAIL
+    flags = doctest.NORMALIZE_WHITESPACE |\
+        doctest.ELLIPSIS |\
+        doctest.IGNORE_EXCEPTION_DETAIL
     return unittest.TestSuite((
         DocFileSuite('README.txt',
                      setUp=testing.setUp, tearDown=testing.tearDown,
@@ -48,7 +48,4 @@ def test_suite():
                      setUp=testing.setUp, tearDown=testing.tearDown,
                      optionflags=flags, checker=checker,
                      ),
-        ))
-
-if __name__ == '__main__':
-    unittest.main(defaultTest='test_suite')
+    ))

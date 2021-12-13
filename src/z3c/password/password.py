@@ -139,44 +139,44 @@ class HighSecurityPasswordUtility(object):
             num_upper_letters > self.groupMax or
             num_digits > self.groupMax or
             num_specials > self.groupMax or
-            num_others > self.groupMax):
+                num_others > self.groupMax):
             raise interfaces.TooManyGroupCharacters(
                 groupMax=self.groupMax)
 
         if (self.minLowerLetter is not None
-            and num_lower_letters < self.minLowerLetter):
+                and num_lower_letters < self.minLowerLetter):
             raise interfaces.TooFewGroupCharactersLowerLetter(
-                        minLowerLetter=self.minLowerLetter)
+                minLowerLetter=self.minLowerLetter)
 
         if (self.minUpperLetter is not None
-            and num_upper_letters < self.minUpperLetter):
+                and num_upper_letters < self.minUpperLetter):
             raise interfaces.TooFewGroupCharactersUpperLetter(
-                        minUpperLetter=self.minUpperLetter)
+                minUpperLetter=self.minUpperLetter)
 
         if (self.minDigits is not None
-            and num_digits < self.minDigits):
+                and num_digits < self.minDigits):
             raise interfaces.TooFewGroupCharactersDigits(
-                        minDigits=self.minDigits)
+                minDigits=self.minDigits)
 
         if (self.minSpecials is not None
-            and num_specials < self.minSpecials):
+                and num_specials < self.minSpecials):
             raise interfaces.TooFewGroupCharactersSpecials(
-                        minSpecials=self.minSpecials)
+                minSpecials=self.minSpecials)
 
         if (self.minOthers is not None
-            and num_others < self.minOthers):
+                and num_others < self.minOthers):
             raise interfaces.TooFewGroupCharactersOthers(
-                        minOthers=self.minOthers)
+                minOthers=self.minOthers)
 
         if (self.minUniqueCharacters is not None
-            and len(uniqueChars) < self.minUniqueCharacters):
+                and len(uniqueChars) < self.minUniqueCharacters):
             raise interfaces.TooFewUniqueCharacters(
-                        minUniqueCharacters=self.minUniqueCharacters)
+                minUniqueCharacters=self.minUniqueCharacters)
 
         if (self.minUniqueLetters is not None
-            and len(uniqueLetters) < self.minUniqueLetters):
+                and len(uniqueLetters) < self.minUniqueLetters):
             raise interfaces.TooFewUniqueLetters(
-                        minUniqueLetters=self.minUniqueLetters)
+                minUniqueLetters=self.minUniqueLetters)
 
         return
 
@@ -190,7 +190,7 @@ class HighSecurityPasswordUtility(object):
 
             # Generate the password
             chars = self.LOWERLETTERS + self.UPPERLETTERS + \
-                    self.DIGITS + self.SPECIALS
+                self.DIGITS + self.SPECIALS
 
             for count in range(length):
                 new += self.random.choice(chars)
@@ -203,6 +203,7 @@ class HighSecurityPasswordUtility(object):
             else:
                 verified = True
         return new
+
 
 @zope.interface.implementer(interfaces.IPasswordOptionsUtility)
 class PasswordOptionsUtility(object):
