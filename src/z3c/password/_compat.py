@@ -24,4 +24,4 @@ if PY3:
 else:
 
     unichr = unichr
-    string_types = (str, unicode)
+    string_types = (str, unicode)  # noqa: F821 undefined name 'unicode'

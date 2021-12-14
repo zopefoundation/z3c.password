@@ -17,6 +17,7 @@ import zope.component
 import zope.component.testing
 from zope.password import password
 
+
 def setUp(test):
     zope.component.testing.setUp(test)
 

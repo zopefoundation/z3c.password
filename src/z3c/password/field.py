@@ -18,6 +18,7 @@ import zope.schema
 from z3c.password import interfaces
 from z3c.password._compat import string_types
 
+
 class Password(zope.schema.Password):
 
     def __init__(self, checker=None, ignoreEmpty=False, **kw):
@@ -52,11 +53,11 @@ class Password(zope.schema.Password):
         if checker is not None:
             self.checker.verify(value, old)
 
-        #try to check for disallowPasswordReuse here too, to raise
-        #problems ASAP
+        # try to check for disallowPasswordReuse here too, to raise
+        # problems ASAP
         if self.context is not None:
             try:
                 self.context._checkDisallowedPreviousPassword(value)
             except AttributeError:
-                #if _checkDisallowedPreviousPassword is missing
+                # if _checkDisallowedPreviousPassword is missing
                 pass

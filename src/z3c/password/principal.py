@@ -20,14 +20,15 @@ from zope.security.management import getInteraction
 
 from z3c.password import interfaces
 
+
 class PrincipalMixIn(object):
     """A Principal Mixin class for ``zope.app.principalfolder``'s internal
     principal."""
 
     passwordExpiresAfter = None
     passwordSetOn = None
-    passwordExpired = False #force PasswordExpired,
-                             #e.g. for changePasswordOnNextLogin
+    # force PasswordExpired, e.g. for changePasswordOnNextLogin
+    passwordExpired = False
 
     failedAttempts = 0
     failedAttemptCheck = interfaces.TML_CHECK_ALL
@@ -43,8 +44,8 @@ class PrincipalMixIn(object):
     def _checkDisallowedPreviousPassword(self, password):
         if self._disallowPasswordReuse():
             if self.previousPasswords is not None and password is not None:
-                #hack, but this should work with zope.app.authentication and
-                #z3c.authenticator
+                # hack, but this should work with zope.app.authentication and
+                # z3c.authenticator
                 passwordManager = self._getPasswordManager()
 
                 for pwd in self.previousPasswords:
@@ -74,11 +75,10 @@ class PrincipalMixIn(object):
         self.lastFailedAttempt = None
         self.passwordExpired = False
 
-
     password = property(getPassword, setPassword)
 
     def now(self):
-        #hook to facilitate testing and easier override
+        # hook to facilitate testing and easier override
         return datetime.datetime.now()
 
     def _isRelevantRequest(self):
@@ -93,7 +93,7 @@ class PrincipalMixIn(object):
         try:
             request = interaction.participations[0]
         except IndexError:
-            return True # no request, we regard that as relevant.
+            return True  # no request, we regard that as relevant.
 
         if fac == interfaces.TML_CHECK_NONRESOURCE:
             if '/@@/' in request.getURL():
@@ -121,20 +121,22 @@ class PrincipalMixIn(object):
             if self.tooManyLoginFailures():
                 locked = self.accountLocked()
                 if locked is None:
-                    #no lockPeriod
+                    # no lockPeriod
                     pass
                 elif locked:
-                    #account locked by tooManyLoginFailures and within lockPeriod
+                    # account locked by tooManyLoginFailures and within
+                    # lockPeriod
                     if not same:
                         self.lastFailedAttempt = self.now()
                     raise interfaces.AccountLocked(self)
                 else:
-                    #account locked by tooManyLoginFailures and out of lockPeriod
+                    # account locked by tooManyLoginFailures and out of
+                    # lockPeriod
                     self.failedAttempts = 0
                     self.lastFailedAttempt = None
 
         if same:
-            #successful attempt
+            # successful attempt
             if not ignoreExpiration:
                 if self.passwordExpired:
                     raise interfaces.PasswordExpired(self)
@@ -146,7 +148,7 @@ class PrincipalMixIn(object):
                         raise interfaces.PasswordExpired(self)
             add = 0
         else:
-            #failed attempt, record it, increase counter
+            # failed attempt, record it, increase counter
             self.failedAttempts += 1
             self.lastFailedAttempt = self.now()
             add = 1
@@ -158,19 +160,19 @@ class PrincipalMixIn(object):
                 raise interfaces.TooManyLoginFailures(self)
 
         if same and self.failedAttempts != 0:
-            #if all nice and good clear failure counter
+            # if all nice and good clear failure counter
             self.failedAttempts = 0
             self.lastFailedAttempt = None
 
         return same
 
-    def tooManyLoginFailures(self, add = 0):
+    def tooManyLoginFailures(self, add=0):
         attempts = self._maxFailedAttempts()
-        #this one needs to be >=, because... data just does not
-        #get saved on an exception when running under of a full Zope env.
-        #the dance around ``add`` has the same roots
-        #we need to be able to increase the failedAttempts count and not raise
-        #at the same time
+        # this one needs to be >=, because... data just does not
+        # get saved on an exception when running under of a full Zope env.
+        # the dance around ``add`` has the same roots
+        # we need to be able to increase the failedAttempts count and not raise
+        # at the same time
         if attempts is not None:
             attempts += add
             if self.failedAttempts >= attempts:
@@ -180,9 +182,9 @@ class PrincipalMixIn(object):
     def accountLocked(self):
         lockPeriod = self._lockOutPeriod()
         if lockPeriod is not None:
-            #check if the user locked himself
+            # check if the user locked himself
             if (self.lastFailedAttempt is not None
-                and self.lastFailedAttempt + lockPeriod > self.now()):
+                    and self.lastFailedAttempt + lockPeriod > self.now()):
                 return True
             else:
                 return False
@@ -198,7 +200,7 @@ class PrincipalMixIn(object):
 
     def _optionsUtility(self):
         if self.passwordOptionsUtilityName:
-            #if we have a utility name, then it must be there
+            # if we have a utility name, then it must be there
             return zope.component.getUtility(
                 interfaces.IPasswordOptionsUtility,
                 name=self.passwordOptionsUtilityName)

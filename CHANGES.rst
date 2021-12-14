@@ -2,10 +2,12 @@
 CHANGES
 =======
 
-1.0.1 (unreleased)
+1.1.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Add support for Python 3.8, 3.9 and 3.10.
+
+- Drop support for Python 3.4.
 
 
 1.0.0 (2018-11-14)
@@ -17,17 +19,18 @@ CHANGES
 - Drop support for ``None`` passwords, since they are not supported in the
   underlying APIs anymore.
 
+
 1.0.0a1 (2013-02-28)
 --------------------
 
-- Added support for Python 3.3.
+- Add support for Python 3.3.
 
-- Dropped dependency on ``zope.app.testing`` and ``zope.app.authentication``.
+- Drop dependency on ``zope.app.testing`` and ``zope.app.authentication``.
 
-- Replaced deprecated ``zope.interface.implements`` usage with equivalent
+- Replace deprecated ``zope.interface.implements`` usage with equivalent
   ``zope.interface.implementer`` decorator.
 
-- Dropped support for Python 2.4 and 2.5.
+- Drop support for Python 2.4 and 2.5.
 
 
 0.11.1 (2012-09-19)

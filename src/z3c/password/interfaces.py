@@ -19,6 +19,7 @@ from zope.i18n import translate
 
 from z3c.password import MessageFactory as _
 
+
 class InvalidPassword(zope.schema.ValidationError):
     """Invalid Password"""
 
@@ -38,6 +39,7 @@ class InvalidPassword(zope.schema.ValidationError):
 class NoPassword(InvalidPassword):
     __doc__ = _('''No new password specified.''')
 
+
 class TooShortPassword(InvalidPassword):
     __doc__ = _('''Password is too short.''')
 
@@ -48,6 +50,7 @@ class TooShortPassword(InvalidPassword):
             self.i18n_message = _(
                 'Password is too short (minimum length: ${minLength}).',
                 mapping=dict(minLength=minLength))
+
 
 class TooLongPassword(InvalidPassword):
     __doc__ = _('''Password is too long.''')
@@ -60,6 +63,7 @@ class TooLongPassword(InvalidPassword):
                 'Password is too long (maximum length: ${maxLength}).',
                 mapping=dict(maxLength=maxLength))
 
+
 class TooSimilarPassword(InvalidPassword):
     __doc__ = _('''Password is too similar to old one.''')
 
@@ -70,9 +74,11 @@ class TooSimilarPassword(InvalidPassword):
         if similarity is not None and maxSimilarity is not None:
             self.i18n_message = _(
                 'Password is too similar to old one'
-                ' (similarity ${similarity}%, should be at most ${maxSimilarity}%).',
+                ' (similarity ${similarity}%, should be at most'
+                ' ${maxSimilarity}%).',
                 mapping=dict(similarity=int(round(similarity * 100)),
                              maxSimilarity=int(maxSimilarity * 100)))
+
 
 class TooManyGroupCharacters(InvalidPassword):
     __doc__ = _('''Password contains too many characters of one group.''')
@@ -86,34 +92,39 @@ class TooManyGroupCharacters(InvalidPassword):
                 ' (should have at most ${groupMax}).',
                 mapping=dict(groupMax=groupMax))
 
+
 class TooFewGroupCharacters(InvalidPassword):
-    __doc__ = _('''Password does not contain enough characters of one group.''')
+    __doc__ = _(
+        '''Password does not contain enough characters of one group.''')
+
 
 class TooFewGroupCharactersLowerLetter(TooFewGroupCharacters):
     __doc__ = _(
-        '''Password does not contain enough characters of lowercase letters.''')
+        'Password does not contain enough characters of lowercase letters.')
 
     def __init__(self, minLowerLetter=None):
         super(TooFewGroupCharactersLowerLetter, self).__init__()
         self.minLowerLetter = minLowerLetter
         if minLowerLetter is not None:
             self.i18n_message = _(
-                'Password does not contain enough characters of lowercase letters'
-                ' (should have at least ${minLowerLetter}).',
+                'Password does not contain enough characters of lowercase'
+                ' letters (should have at least ${minLowerLetter}).',
                 mapping=dict(minLowerLetter=minLowerLetter))
+
 
 class TooFewGroupCharactersUpperLetter(TooFewGroupCharacters):
     __doc__ = _(
-        '''Password does not contain enough characters of uppercase letters.''')
+        'Password does not contain enough characters of uppercase letters.')
 
     def __init__(self, minUpperLetter=None):
         super(TooFewGroupCharactersUpperLetter, self).__init__()
         self.minUpperLetter = minUpperLetter
         if minUpperLetter is not None:
             self.i18n_message = _(
-                'Password does not contain enough characters of uppercase letters'
-                ' (should have at least ${minUpperLetter}).',
+                'Password does not contain enough characters of uppercase'
+                ' letters (should have at least ${minUpperLetter}).',
                 mapping=dict(minUpperLetter=minUpperLetter))
+
 
 class TooFewGroupCharactersDigits(TooFewGroupCharacters):
     __doc__ = _('''Password does not contain enough characters of digits.''')
@@ -127,18 +138,20 @@ class TooFewGroupCharactersDigits(TooFewGroupCharacters):
                 ' (should have at least ${minDigits}).',
                 mapping=dict(minDigits=minDigits))
 
+
 class TooFewGroupCharactersSpecials(TooFewGroupCharacters):
     __doc__ = _(
-        '''Password does not contain enough characters of special characters.''')
+        'Password does not contain enough characters of special characters.')
 
     def __init__(self, minSpecials=None):
         super(TooFewGroupCharactersSpecials, self).__init__()
         self.minSpecials = minSpecials
         if minSpecials is not None:
             self.i18n_message = _(
-                'Password does not contain enough characters of special characters'
-                ' (should have at least ${minSpecials}).',
+                'Password does not contain enough characters of special'
+                ' characters (should have at least ${minSpecials}).',
                 mapping=dict(minSpecials=minSpecials))
+
 
 class TooFewGroupCharactersOthers(TooFewGroupCharacters):
     __doc__ = _(
@@ -149,9 +162,10 @@ class TooFewGroupCharactersOthers(TooFewGroupCharacters):
         self.minOthers = minOthers
         if minOthers is not None:
             self.i18n_message = _(
-                'Password does not contain enough characters of other characters'
-                ' (should have at least ${minOthers}).',
+                'Password does not contain enough characters of other'
+                ' characters (should have at least ${minOthers}).',
                 mapping=dict(minOthers=minOthers))
+
 
 class TooFewUniqueCharacters(InvalidPassword):
     __doc__ = _('''Password does not contain enough unique characters.''')
@@ -165,6 +179,7 @@ class TooFewUniqueCharacters(InvalidPassword):
                 ' (should have at least ${minUniqueCharacters}).',
                 mapping=dict(minUniqueCharacters=minUniqueCharacters))
 
+
 class TooFewUniqueLetters(InvalidPassword):
     __doc__ = _('''Password does not contain enough unique letters.''')
 
@@ -177,12 +192,14 @@ class TooFewUniqueLetters(InvalidPassword):
                 ' (should have at least ${minUniqueLetters}).',
                 mapping=dict(minUniqueLetters=minUniqueLetters))
 
+
 class PasswordExpired(Exception):
     __doc__ = _('''The password has expired.''')
 
     def __init__(self, principal):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
+
 
 class PreviousPasswordNotAllowed(InvalidPassword):
     __doc__ = _('''The password set was already used before.''')
@@ -191,6 +208,7 @@ class PreviousPasswordNotAllowed(InvalidPassword):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
 
+
 class TooManyLoginFailures(Exception):
     __doc__ = _('''The password was entered incorrectly too often.''')
 
@@ -198,9 +216,11 @@ class TooManyLoginFailures(Exception):
         self.principal = principal
         Exception.__init__(self, self.__doc__)
 
+
 TML_CHECK_ALL = None
 TML_CHECK_NONRESOURCE = 'nonres'
 TML_CHECK_POSTONLY = 'post'
+
 
 class AccountLocked(Exception):
     __doc__ = _('The account is locked, because the password was '
@@ -267,7 +287,8 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
         if task.minLength is not None and task.maxLength is not None:
             if task.minLength > task.maxLength:
                 raise zope.interface.Invalid(
-                    u"Minimum length must not be greater than the maximum length.")
+                    u"Minimum length must not be greater than the maximum"
+                    u" length.")
 
     groupMax = zope.schema.Int(
         title=_(u'Maximum Characters of Group'),
@@ -279,7 +300,8 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
 
     maxSimilarity = zope.schema.Float(
         title=_(u'Old/New Similarity'),
-        description=(u'The similarity ratio between the new and old password.'),
+        description=(
+            u'The similarity ratio between the new and old password.'),
         required=False,
         default=None)
 
@@ -311,7 +333,7 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
         required=False,
         default=None)
 
-    #WARNING! generating a password with Others is not yet supported
+    # WARNING! generating a password with Others is not yet supported
     minOthers = zope.schema.Int(
         title=_(u'Minimum Number of Other characters'),
         description=_(u'The minimum amount of other characters that a '
@@ -375,7 +397,7 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
     @zope.interface.invariant
     def minUniqueLettersLength(task):
         if (task.minUniqueLetters is not None
-            and task.minUniqueLetters is not None):
+                and task.minUniqueLetters is not None):
             if task.minUniqueLetters > task.maxLength:
                 raise zope.interface.Invalid(
                     u"Minimum unique letters number must not be greater than "
@@ -392,12 +414,11 @@ class IHighSecurityPasswordUtility(IPasswordUtility):
     @zope.interface.invariant
     def minUniqueCharactersLength(task):
         if (task.minUniqueCharacters is not None
-            and task.minUniqueCharacters is not None):
+                and task.minUniqueCharacters is not None):
             if task.minUniqueCharacters > task.maxLength:
                 raise zope.interface.Invalid(
-                    u"Minimum unique characters length must not be greater than "
-                    u"the maximum length.")
-
+                    u"Minimum unique characters length must not be greater"
+                    u" than the maximum length.")
 
 
 class IPasswordOptionsUtility(zope.interface.Interface):
@@ -421,16 +442,19 @@ class IPasswordOptionsUtility(zope.interface.Interface):
 
     lockOutPeriod = zope.schema.Int(
         title=_(u'Lockout period (minutes)'),
-        description=_(u'Lockout the user after too many failed password entries'
-                       'for this many minutes. The user can try again after.'),
+        description=_(
+            u'Lockout the user after too many failed password entries'
+            u'for this many minutes. The user can try again after.'),
         required=False,
         default=None)
 
     maxFailedAttempts = zope.schema.Int(
-        title=_(u'Max. number of failed password entries before account is locked'),
-        description=_(u'Specifies the amount of failed attempts allowed to check '
-                      'the password before the password is locked and no new '
-                      'password can be provided.'),
+        title=_(u'Max. number of failed password entries before account is'
+                u' locked'),
+        description=_(
+            u'Specifies the amount of failed attempts allowed to check '
+            u'the password before the password is locked and no new '
+            u'password can be provided.'),
         required=False,
         default=None)
 
@@ -440,7 +464,7 @@ class IPasswordOptionsUtility(zope.interface.Interface):
                       'All requests, non-reqource requests, POST requests.'),
         required=False,
         values=[TML_CHECK_ALL, TML_CHECK_NONRESOURCE, TML_CHECK_POSTONLY],
-        default=TML_CHECK_ALL )
+        default=TML_CHECK_ALL)
 
     disallowPasswordReuse = zope.schema.Bool(
         title=_(u'Disallow Password Reuse'),
