@@ -25,11 +25,11 @@ from z3c.password import interfaces
 
 
 @zope.interface.implementer(interfaces.IPasswordUtility)
-class TrivialPasswordUtility(object):
+class TrivialPasswordUtility:
     """A trivial password utility."""
 
-    description = (u'All passwords are accepted and always the "trivial" '
-                   u'password is generated.')
+    description = ('All passwords are accepted and always the "trivial" '
+                   'password is generated.')
 
     def verify(self, new, ref=None):
         '''See interfaces.IPasswordUtility'''
@@ -41,7 +41,7 @@ class TrivialPasswordUtility(object):
 
 
 @zope.interface.implementer(interfaces.IHighSecurityPasswordUtility)
-class HighSecurityPasswordUtility(object):
+class HighSecurityPasswordUtility:
     """An implementation of the high-security password API."""
 
     minLength = FieldProperty(
@@ -72,9 +72,9 @@ class HighSecurityPasswordUtility(object):
     DIGITS = string.digits
     SPECIALS = string.punctuation
 
-    description = (u'Passwords generated and verified by this utility conform '
-                   u'strictly to the specified parameters. See the interface '
-                   u'for more details.')
+    description = ('Passwords generated and verified by this utility conform '
+                   'strictly to the specified parameters. See the interface '
+                   'for more details.')
 
     def __init__(self, minLength=8, maxLength=12, groupMax=6,
                  maxSimilarity=0.6, seed=None,
@@ -207,7 +207,7 @@ class HighSecurityPasswordUtility(object):
 
 
 @zope.interface.implementer(interfaces.IPasswordOptionsUtility)
-class PasswordOptionsUtility(object):
+class PasswordOptionsUtility:
     """An implementation of the security options."""
 
     changePasswordOnNextLogin = FieldProperty(

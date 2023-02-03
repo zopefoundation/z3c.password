@@ -17,7 +17,6 @@ import zope.component
 import zope.schema
 
 from z3c.password import interfaces
-from z3c.password._compat import string_types
 
 
 class Password(zope.schema.Password):
@@ -25,13 +24,13 @@ class Password(zope.schema.Password):
     def __init__(self, checker=None, ignoreEmpty=False, **kw):
         self._checker = checker
         self._ignoreEmpty = ignoreEmpty
-        super(Password, self).__init__(**kw)
+        super().__init__(**kw)
 
     @property
     def checker(self):
         if self._checker is None:
             return None
-        if not isinstance(self._checker, string_types):
+        if not isinstance(self._checker, str):
             return self._checker
         return zope.component.getUtility(
             interfaces.IPasswordUtility, self._checker)
@@ -43,7 +42,7 @@ class Password(zope.schema.Password):
             # but we would want to leave the old password in place
             return
 
-        super(Password, self).validate(value)
+        super().validate(value)
         old = None
         if self.context is not None:
             try:

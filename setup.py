@@ -27,7 +27,7 @@ setup(
     name='z3c.password',
     version='2.0.dev0',
     author="Stephan Richter, Roger Ineichen and the Zope Community",
-    author_email="zope3-dev@zope.org",
+    author_email="zope3-dev@zope.dev",
     description="Password generation and verification utility for Zope3",
     long_description=(
         read('README.rst')
@@ -60,6 +60,7 @@ setup(
     include_package_data=True,
     package_dir={'': 'src'},
     namespace_packages=['z3c'],
+    python_requires='>=3.7',
     extras_require=dict(
         test=[
             'z3c.coverage',

@@ -14,27 +14,10 @@
 """Test Setup
 """
 import doctest
-import re
 import unittest
 from doctest import DocFileSuite
 
-from zope.testing import renormalizing
-
 from z3c.password import testing
-
-
-checker = renormalizing.RENormalizing([
-    # Python 3 bytes add a "b".
-    (re.compile("b('.*?')"),
-     r"\1"),
-    (re.compile('b(".*?")'),
-     r"\1"),
-    # Python 3 adds module name to exceptions.
-    (re.compile("z3c.password.interfaces.NoPassword"),
-     r"NoPassword"),
-    (re.compile("zope.security.interfaces.NoInteraction"),
-     r"NoInteraction"),
-])
 
 
 def test_suite():
@@ -44,10 +27,8 @@ def test_suite():
     return unittest.TestSuite((
         DocFileSuite('README.txt',
                      setUp=testing.setUp, tearDown=testing.tearDown,
-                     optionflags=flags, checker=checker,
-                     ),
+                     optionflags=flags),
         DocFileSuite('principal.txt',
                      setUp=testing.setUp, tearDown=testing.tearDown,
-                     optionflags=flags, checker=checker,
-                     ),
+                     optionflags=flags),
     ))
