@@ -17,9 +17,11 @@ import doctest
 import re
 import unittest
 from doctest import DocFileSuite
+
 from zope.testing import renormalizing
 
 from z3c.password import testing
+
 
 checker = renormalizing.RENormalizing([
     # Python 3 bytes add a "b".

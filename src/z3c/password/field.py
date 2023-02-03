@@ -15,6 +15,7 @@
 """
 import zope.component
 import zope.schema
+
 from z3c.password import interfaces
 from z3c.password._compat import string_types
 
