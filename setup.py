@@ -14,7 +14,9 @@
 """Setup
 """
 import os
-from setuptools import setup, find_packages
+
+from setuptools import find_packages
+from setuptools import setup
 
 
 def read(*rnames):
@@ -23,9 +25,9 @@ def read(*rnames):
 
 setup(
     name='z3c.password',
-    version='1.1.1.dev0',
+    version='2.0.dev0',
     author="Stephan Richter, Roger Ineichen and the Zope Community",
-    author_email="zope3-dev@zope.org",
+    author_email="zope-dev@zope.dev",
     description="Password generation and verification utility for Zope3",
     long_description=(
         read('README.rst')
@@ -40,26 +42,25 @@ setup(
         'Intended Audience :: Developers',
         'License :: OSI Approved :: Zope Public License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: Implementation :: CPython',
-        "Programming Language :: Python :: Implementation :: PyPy",
+        'Programming Language :: Python :: Implementation :: PyPy',
         'Natural Language :: English',
         'Operating System :: OS Independent',
         'Topic :: Internet :: WWW/HTTP',
-        'Framework :: Zope :: 3'],
+        'Framework :: Zope :: 3',
+    ],
     url='http://pypi.org/project/z3c.password',
     packages=find_packages('src'),
     include_package_data=True,
     package_dir={'': 'src'},
     namespace_packages=['z3c'],
+    python_requires='>=3.7',
     extras_require=dict(
         test=[
             'z3c.coverage',

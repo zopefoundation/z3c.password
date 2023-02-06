@@ -14,6 +14,7 @@
 """Principal MixIn for Advanced Password Management
 """
 import datetime
+
 import persistent.list
 import zope.component
 from zope.security.management import getInteraction
@@ -21,7 +22,7 @@ from zope.security.management import getInteraction
 from z3c.password import interfaces
 
 
-class PrincipalMixIn(object):
+class PrincipalMixIn:
     """A Principal Mixin class for ``zope.app.principalfolder``'s internal
     principal."""
 
@@ -53,12 +54,12 @@ class PrincipalMixIn(object):
                         raise interfaces.PreviousPasswordNotAllowed(self)
 
     def getPassword(self):
-        return super(PrincipalMixIn, self).getPassword()
+        return super().getPassword()
 
     def setPassword(self, password, passwordManagerName=None):
         self._checkDisallowedPreviousPassword(password)
 
-        super(PrincipalMixIn, self).setPassword(password, passwordManagerName)
+        super().setPassword(password, passwordManagerName)
 
         if self._disallowPasswordReuse():
             if self.previousPasswords is None:
@@ -110,7 +111,7 @@ class PrincipalMixIn(object):
         # for EACH request
 
         # Check the password
-        same = super(PrincipalMixIn, self).checkPassword(pwd)
+        same = super().checkPassword(pwd)
 
         # Do not try to record failed attempts or raise account locked
         # errors for requests that are irrelevant in this regard.

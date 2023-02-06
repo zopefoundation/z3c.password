@@ -134,8 +134,7 @@ letters, digits, punctuation, other), and the maximum similarity score.
   ...
   TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
 
-  >>> from z3c.password._compat import unichr
-  >>> pwd.verify(unichr(0x0e1)*8)
+  >>> pwd.verify(chr(0x0e1)*8)
   Traceback (most recent call last):
   ...
   TooManyGroupCharacters: Password contains too many characters of one group (should have at most 6).
@@ -256,17 +255,17 @@ We want to have at least 5 others in the password:
   >>> pwd = password.HighSecurityPasswordUtility(seed=8)
   >>> pwd.minOthers = 5
 
-  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4))
+  >>> pwd.verify('foobar'+chr(0x0c3)+chr(0x0c4))
   Traceback (most recent call last):
   ...
   TooFewGroupCharactersOthers: Password does not contain enough characters of other characters (should have at least 5).
 
-  >>> pwd.verify('foobar'+unichr(0x0c3)+unichr(0x0c4)+unichr(0x0e1))
+  >>> pwd.verify('foobar'+chr(0x0c3)+chr(0x0c4)+chr(0x0e1))
   Traceback (most recent call last):
   ...
   TooFewGroupCharactersOthers: Password does not contain enough characters of other characters (should have at least 5).
 
-  >>> pwd.verify('fOO'+unichr(0x0e1)*5)
+  >>> pwd.verify('fOO'+chr(0x0e1)*5)
 
 
 Generating passwords with others not yet supported
@@ -339,13 +338,13 @@ Let's now create the field:
 
   >>> pwdField = field.Password(
   ...     __name__='password',
-  ...     title=u'Password',
+  ...     title='Password',
   ...     checker=pwd)
 
 Let's validate a value:
 
-  >>> pwdField.validate(u'fooBar12')
-  >>> pwdField.validate(u'fooBar')
+  >>> pwdField.validate('fooBar12')
+  >>> pwdField.validate('fooBar')
   Traceback (most recent call last):
   ...
   TooShortPassword: Password is too short (minimum length: 8).
@@ -361,14 +360,14 @@ Let's now create a principal:
   ...                   principalfolder.InternalPrincipal):
   ...     pass
 
-  >>> user = MyPrincipal('srichter', '123123', u'Stephan Richter')
+  >>> user = MyPrincipal('srichter', '123123', 'Stephan Richter')
 
 Bind the field:
 
   >>> bound = pwdField.bind(user)
 
-  >>> bound.validate(u'fooBar12')
-  >>> bound.validate(u'fooBar')
+  >>> bound.validate('fooBar12')
+  >>> bound.validate('fooBar')
   Traceback (most recent call last):
   ...
   TooShortPassword: Password is too short (minimum length: 8).
@@ -376,14 +375,14 @@ Bind the field:
 Let's create a principal without the PrincipalMixIn:
 
   >>> user = principalfolder.InternalPrincipal('srichter', '123123',
-  ...     u'Stephan Richter')
+  ...     'Stephan Richter')
 
 Bind the field:
 
   >>> bound = pwdField.bind(user)
 
-  >>> bound.validate(u'fooBar12')
-  >>> bound.validate(u'fooBar')
+  >>> bound.validate('fooBar12')
+  >>> bound.validate('fooBar')
   Traceback (most recent call last):
   ...
   TooShortPassword: Password is too short (minimum length: 8).
@@ -398,13 +397,13 @@ Recreate the field:
 
   >>> pwdField = field.Password(
   ...     __name__='password',
-  ...     title=u'Password',
+  ...     title='Password',
   ...     checker='my password checker')
 
 Let's validate a value:
 
-  >>> pwdField.validate(u'fooBar12')
-  >>> pwdField.validate(u'fooBar')
+  >>> pwdField.validate('fooBar12')
+  >>> pwdField.validate('fooBar')
   Traceback (most recent call last):
   ...
   TooShortPassword: Password is too short (minimum length: 8).
@@ -416,23 +415,23 @@ No checker specified.
 
   >>> pwdField = field.Password(
   ...     __name__='password',
-  ...     title=u'Password')
+  ...     title='Password')
 
 Validation silently succeeds with a checker:
 
-  >>> pwdField.validate(u'fooBar12')
-  >>> pwdField.validate(u'fooBar')
+  >>> pwdField.validate('fooBar12')
+  >>> pwdField.validate('fooBar')
 
 Bad utility name.
 
   >>> pwdField = field.Password(
   ...     __name__='password',
-  ...     title=u'Password',
+  ...     title='Password',
   ...     checker='foobar password checker')
 
 Burps on the utility lookup as expected:
 
-  >>> pwdField.validate(u'fooBar12')
+  >>> pwdField.validate('fooBar12')
   Traceback (most recent call last):
   ...
   ComponentLookupError:...
@@ -441,11 +440,11 @@ Bound object does not have the property:
 
   >>> pwdField = field.Password(
   ...     __name__='foobar',
-  ...     title=u'Password',
+  ...     title='Password',
   ...     checker=pwd)
 
   >>> bound = pwdField.bind(user)
 
 Validation silently succeeds:
 
-  >>> bound.validate(u'fooBar12')
+  >>> bound.validate('fooBar12')
