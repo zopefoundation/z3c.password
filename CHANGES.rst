@@ -7,6 +7,9 @@ CHANGES
 
 - Add support for Python 3.11, 3.12.
 
+- Compile ``*.mo`` files at release time instead of including them in the
+  repository.
+
 - Drop support for Python 2.7, 3.5, 3.6.
 
 
