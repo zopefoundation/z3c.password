@@ -11,8 +11,6 @@
 # FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
-"""Setup
-"""
 import os
 
 from setuptools import find_packages
@@ -55,7 +53,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Framework :: Zope :: 3',
     ],
-    url='http://pypi.org/project/z3c.password',
+    url='https://github.com/zopefoundation/z3c.password',
     packages=find_packages('src'),
     include_package_data=True,
     package_dir={'': 'src'},
@@ -79,11 +77,5 @@ setup(
         'zope.schema',
         'zope.security',
     ],
-    tests_require=[
-        'zope.password',
-        'zope.pluggableauth',
-        'zope.testing',
-    ],
-    test_suite='z3c.password.tests.test_suite',
     zip_safe=False,
 )
