@@ -13,7 +13,6 @@
 ##############################################################################
 import os
 
-from setuptools import find_packages
 from setuptools import setup
 
 
@@ -23,7 +22,7 @@ def read(*rnames):
 
 setup(
     name='z3c.password',
-    version='2.2.dev0',
+    version='3.0.dev0',
     author="Stephan Richter, Roger Ineichen and the Zope Community",
     author_email="zope-dev@zope.dev",
     description="Password generation and verification utility for Zope3",
@@ -54,10 +53,7 @@ setup(
         'Framework :: Zope :: 3',
     ],
     url='https://github.com/zopefoundation/z3c.password',
-    packages=find_packages('src'),
     include_package_data=True,
-    package_dir={'': 'src'},
-    namespace_packages=['z3c'],
     python_requires='>=3.9',
     extras_require=dict(
         test=[
