@@ -32,7 +32,7 @@ setup(
         + '\n\n' +
         read('CHANGES.rst')
     ),
-    license="ZPL 2.1",
+    license="ZPL-2.1",
     keywords="zope3 z3c password verification",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
